@@ -8,20 +8,26 @@
 import SwiftUI
 import CoreData
 
-import SwiftUI
-import CoreData
-
 struct ContentView: View {
-    private let factory: ViewModelFactory
+    @EnvironmentObject var authenticationManager: AuthenticationManagerImpl
+    @EnvironmentObject var factory: AppViewModelFactory
+
     @State private var showAddGame = false
     @State private var showSettings = false
     @AppStorage("isDarkMode") private var isDarkMode = true
-
-    init(factory: ViewModelFactory) {
-        self.factory = factory
-    }
     
     var body: some View {
+        VStack {
+            if authenticationManager.isAuthenticated {
+                authenticatedContentView()
+            } else {
+                AuthView(viewModel: factory.createAuthViewModel())
+            }
+        }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
+    }
+    
+    func authenticatedContentView() -> some View {
         NavigationView {
             getTabBarView()
                 .navigationTitle("NHL Tracker")
@@ -36,21 +42,18 @@ struct ContentView: View {
                     }
                 }
                 .sheet(isPresented: $showSettings) {
-                    SettingsView() // Open SettingsView in a sheet
+                    SettingsView()
                 }
-                .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
-}
-
-extension ContentView {
+    
     func getTabBarView() -> some View {
         return TabView {
-            AddGameScreen(viewModel: factory.createAddGameViewModel())
+            Text("Add Game Tab Content")
                 .tabItem {
                     Label("Add Game", systemImage: "plus.circle.fill")
                 }
-            StatsScreen(viewModel: factory.createStatsViewModel())
+            Text("Games Tab Content")
                 .tabItem {
                     Label("Games", systemImage: "chart.bar.fill")
                 }
@@ -59,8 +62,13 @@ extension ContentView {
     }
 }
 
-//#Preview {
-//    let mockFactory = MockViewModelFactory()
-//    ContentView(factory: mockFactory)
-//        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-//}
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        let mockAuthManager = AuthenticationManagerImpl() 
+        let mockFactory = AppViewModelFactory(authManager: mockAuthManager)
+
+        ContentView()
+            .environmentObject(mockAuthManager)
+            .environmentObject(mockFactory)
+    }
+}
