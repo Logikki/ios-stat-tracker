@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		77AA6353991C725C2596372B /* Pods_stat_tracker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0749F7997E2C69246AD99746 /* Pods_stat_tracker.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B7D4854F2D49315E00C5DEC2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0749F7997E2C69246AD99746 /* Pods_stat_tracker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_stat_tracker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D749BC04F08179615A0A389 /* Pods-stat-tracker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-stat-tracker.debug.xcconfig"; path = "Target Support Files/Pods-stat-tracker/Pods-stat-tracker.debug.xcconfig"; sourceTree = "<group>"; };
+		6AE279C9EF729EC4D2ACA15A /* Pods-stat-tracker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-stat-tracker.release.xcconfig"; path = "Target Support Files/Pods-stat-tracker/Pods-stat-tracker.release.xcconfig"; sourceTree = "<group>"; };
 		B7D485392D49315C00C5DEC2 /* stat-tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stat-tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7D4854E2D49315E00C5DEC2 /* stat-trackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stat-trackerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7D485582D49315E00C5DEC2 /* stat-trackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stat-trackerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77AA6353991C725C2596372B /* Pods_stat_tracker.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +93,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6EC6140B0093F2D722010EBE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0749F7997E2C69246AD99746 /* Pods_stat_tracker.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B7D485302D49315C00C5DEC2 = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +108,8 @@
 				B7D485512D49315E00C5DEC2 /* stat-trackerTests */,
 				B7D4855B2D49315E00C5DEC2 /* stat-trackerUITests */,
 				B7D4853A2D49315C00C5DEC2 /* Products */,
+				C3791B702392A899E32EB4B8 /* Pods */,
+				6EC6140B0093F2D722010EBE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +123,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C3791B702392A899E32EB4B8 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4D749BC04F08179615A0A389 /* Pods-stat-tracker.debug.xcconfig */,
+				6AE279C9EF729EC4D2ACA15A /* Pods-stat-tracker.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -112,9 +139,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7D485622D49315E00C5DEC2 /* Build configuration list for PBXNativeTarget "stat-tracker" */;
 			buildPhases = (
+				4C6CBC6AB01F38F47F69AC94 /* [CP] Check Pods Manifest.lock */,
 				B7D485352D49315C00C5DEC2 /* Sources */,
 				B7D485362D49315C00C5DEC2 /* Frameworks */,
 				B7D485372D49315C00C5DEC2 /* Resources */,
+				ECE6BE034653AD3C76633DCD /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -124,8 +153,6 @@
 				B7D4853B2D49315C00C5DEC2 /* stat-tracker */,
 			);
 			name = "stat-tracker";
-			packageProductDependencies = (
-			);
 			productName = "stat-tracker";
 			productReference = B7D485392D49315C00C5DEC2 /* stat-tracker.app */;
 			productType = "com.apple.product-type.application";
@@ -147,8 +174,6 @@
 				B7D485512D49315E00C5DEC2 /* stat-trackerTests */,
 			);
 			name = "stat-trackerTests";
-			packageProductDependencies = (
-			);
 			productName = "stat-trackerTests";
 			productReference = B7D4854E2D49315E00C5DEC2 /* stat-trackerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -170,8 +195,6 @@
 				B7D4855B2D49315E00C5DEC2 /* stat-trackerUITests */,
 			);
 			name = "stat-trackerUITests";
-			packageProductDependencies = (
-			);
 			productName = "stat-trackerUITests";
 			productReference = B7D485582D49315E00C5DEC2 /* stat-trackerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -243,6 +266,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4C6CBC6AB01F38F47F69AC94 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-stat-tracker-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ECE6BE034653AD3C76633DCD /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-stat-tracker/Pods-stat-tracker-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-stat-tracker/Pods-stat-tracker-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-stat-tracker/Pods-stat-tracker-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B7D485352D49315C00C5DEC2 /* Sources */ = {
@@ -403,6 +468,7 @@
 		};
 		B7D485632D49315E00C5DEC2 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4D749BC04F08179615A0A389 /* Pods-stat-tracker.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -410,6 +476,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"stat-tracker/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "stat-tracker/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -432,6 +499,7 @@
 		};
 		B7D485642D49315E00C5DEC2 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6AE279C9EF729EC4D2ACA15A /* Pods-stat-tracker.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -439,6 +507,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"stat-tracker/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "stat-tracker/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

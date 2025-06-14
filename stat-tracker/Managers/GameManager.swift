@@ -5,7 +5,6 @@
 //  Created by Rkos on 28.1.2025.
 //
 import Foundation
-import CoreData
 
 protocol GameManager {
     func fetchGames() -> [Game]?

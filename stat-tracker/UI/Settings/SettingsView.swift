@@ -9,13 +9,13 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = SettingsViewModel()  // Use the ViewModel
+    @StateObject private var viewModel = SettingsViewModel()
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Appearance")) {
-                    Toggle("Dark Mode", isOn: $viewModel.isDarkMode)  // Toggle dark mode
+                    Toggle("Dark Mode", isOn: $viewModel.isDarkMode)
                 }
             }
             .navigationTitle("Settings")

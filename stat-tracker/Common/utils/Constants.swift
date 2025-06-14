@@ -9,7 +9,7 @@ import Foundation
 
 public struct Constants {    
     public struct API {
-        public static let URL = "https://game-stats-tracker.fly.dev"
+        public static let URL = "https://game-stats-tracker-api.fly.dev"
 
         public struct Auth {
             public static let login = "/api/login"

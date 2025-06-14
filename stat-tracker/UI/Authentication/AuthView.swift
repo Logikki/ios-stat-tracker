@@ -7,12 +7,14 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthenticationManagerImpl
     @ObservedObject var viewModel: AuthViewModel
     
     @State private var credentials = Credentials(username: "", password: "")
-    @State private var isAuthenticated = false
+    @State private var isAuthenticated = false // This will be updated via onReceive from authManager
 
     init(viewModel: AuthViewModel) {
         self.viewModel = viewModel
@@ -34,12 +36,17 @@ struct AuthView: View {
                     .padding()
             }
             
-            Button("Login") {
-                viewModel.login(credentials: credentials)
+            if viewModel.overallLoading {
+                ProgressView("Authenticating...")
+                    .padding()
+            } else {
+                Button("Login") {
+                    viewModel.login(credentials: credentials)
+                }
+                .padding()
+                .buttonStyle(.borderedProminent)
+                .disabled(credentials.username.isEmpty || credentials.password.isEmpty || viewModel.overallLoading)
             }
-            .padding()
-            .buttonStyle(.borderedProminent)
-            .disabled(credentials.username.isEmpty || credentials.password.isEmpty)
             
             if isAuthenticated {
                 Text("Authentication Successful!")
@@ -49,6 +56,10 @@ struct AuthView: View {
         .padding()
         .onDisappear {
             viewModel.errorMessage = nil
+            viewModel.overallLoading = false
+        }
+        .onReceive(authManager.$isAuthenticated) { authStatus in
+            isAuthenticated = authStatus
         }
     }
 }

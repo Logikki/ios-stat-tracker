@@ -15,16 +15,37 @@ class AuthViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var errorMessage: String?
     
-    private var authManager: AuthenticationManager
-    private let urlSession: URLSessionProtocol = URLSession.shared
+    @Published private var loginCallIsLoading: Bool = false
+    @Published var overallLoading: Bool = false
 
-    init(authenticationManager: AuthenticationManager) {
+    private var authManager: AuthenticationManagerImpl
+    private var userManager: UserManagerImpl
+    private let urlSession: URLSessionProtocol = URLSession.shared
+    private var cancellables = Set<AnyCancellable>()
+
+    init(authenticationManager: AuthenticationManagerImpl,
+         userManager: UserManagerImpl) {
         self.authManager = authenticationManager
+        self.userManager = userManager
+
+        Publishers.CombineLatest(
+            $loginCallIsLoading,
+            userManager.$isLoading
+        )
+        .map { loginLoading, userManagerLoading in
+            return loginLoading || userManagerLoading
+        }
+        .assign(to: &$overallLoading)
     }
 
     func login(credentials: Credentials) {
+        loginCallIsLoading = true
+        errorMessage = nil
+
         guard let url = URL(string: Constants.API.URL + Constants.API.Auth.login) else {
             AppLogger.debug("Error creating URL", category: "Authentication")
+            self.errorMessage = "Invalid login URL."
+            self.loginCallIsLoading = false
             return
         }
         
@@ -35,6 +56,7 @@ class AuthViewModel: ObservableObject {
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
             self.errorMessage = "Invalid request data"
+            self.loginCallIsLoading = false
             return
         }
         
@@ -43,8 +65,11 @@ class AuthViewModel: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         
-        urlSession.dataTask(with: request) { data, response, error in
+        urlSession.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.loginCallIsLoading = false
+
                 if let error = error {
                     AppLogger.debug("login error: " + error.localizedDescription, category: "Network")
                     self.errorMessage = "Request error: \(error.localizedDescription)"
@@ -57,14 +82,15 @@ class AuthViewModel: ObservableObject {
                     return
                 }
 
-                AppLogger.debug("HTTP response: \(httpResponse.allHeaderFields)", category: "Network")
-
                 if httpResponse.statusCode == 200 {
                     do {
                         let decodedResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
                         self.authManager.setAuthState(response: decodedResponse)
+                        self.userManager.fetchOwnUser()
+                        
                         self.errorMessage = nil
                     } catch {
+                        self.authManager.clearAuthState()
                         self.errorMessage = "Failed to decode response"
                     }
                 } else {
@@ -80,15 +106,15 @@ class AuthViewModel: ObservableObject {
     }
 }
 
-// MARK: - Auth Related Models (Public for Decoding)
+// MARK: - Auth Related Models
 
-public struct AuthResponse: Codable {
+struct AuthResponse: Codable {
     public let token: String
     public let username: String
     public let name: String
 }
 
-public struct Credentials {
+struct Credentials {
     public var username: String
     public var password: String
 }
