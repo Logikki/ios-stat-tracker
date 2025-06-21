@@ -10,7 +10,7 @@ import SwiftUI
 
 struct AuthenticatedContentView: View {
     @EnvironmentObject var authenticationManager: AuthenticationManagerImpl
-    @EnvironmentObject var appFactory: AppViewModelFactory
+    @EnvironmentObject var appFactory: ViewModeFactoryImpl
 
     @State private var showSettings = false
     @AppStorage("isDarkMode") private var isDarkMode = true
@@ -30,7 +30,7 @@ struct AuthenticatedContentView: View {
                     }
                 }
                 .sheet(isPresented: $showSettings) {
-                    SettingsView()
+                    SettingsView(viewModel: appFactory.createSettingsViewModel())
                         .environmentObject(authenticationManager)
                 }
         }
@@ -46,6 +46,10 @@ struct AuthenticatedContentView: View {
             Text("Games Tab Content")
                 .tabItem {
                     Label("Games", systemImage: "chart.bar.fill")
+                }
+            Text("Own Profile")
+                .tabItem {
+                    Label("Games", systemImage: "person.crop.circle")
                 }
         }
         .accentColor(.blue)

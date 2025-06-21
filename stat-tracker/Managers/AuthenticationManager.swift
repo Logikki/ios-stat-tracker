@@ -21,6 +21,8 @@ class AuthenticationManagerImpl: AuthenticationManager, ObservableObject {
     @Published var authToken: String? = nil
     @Published var currentUser: AuthResponse? = nil
 
+    static let shared = AuthenticationManagerImpl()
+
     init() {
         loadAuthState()
         AppLogger.info("AuthenticationManager initialized.", category: "Authentication")

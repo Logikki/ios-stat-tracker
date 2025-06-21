@@ -9,5 +9,14 @@ import SwiftUI
 import Foundation
 
 class SettingsViewModel: ObservableObject {
-    @AppStorage("isDarkMode") var isDarkMode = false  // Persist dark mode setting
+    private let authenticationManager: AuthenticationManager
+    @AppStorage("isDarkMode") var isDarkMode = false
+    
+    public init(authenticationManager: AuthenticationManagerImpl, isDarkMode: Bool = false) {
+        self.authenticationManager = authenticationManager
+    }
+    
+    func logout() {
+        self.authenticationManager.clearAuthState()
+    }
 }

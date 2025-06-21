@@ -16,7 +16,7 @@ protocol ViewModelFactory: ObservableObject {
 }
 
 // MARK: - Concrete Factory
-class AppViewModelFactory: ObservableObject, ViewModelFactory {
+class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
     private let teamsManager: TeamsManager
     private let userManager: UserManagerImpl
     private var authManager: AuthenticationManagerImpl
@@ -32,12 +32,12 @@ class AppViewModelFactory: ObservableObject, ViewModelFactory {
     }
     
     public func createAuthViewModel() -> AuthViewModel {
-        // This creates a new AuthViewModel using the injected managers.
-        // In your current setup, AuthViewModel is also an @EnvironmentObject,
-        // so this method might primarily be used for testing or specific non-global flows.
         AuthViewModel(
             authenticationManager: authManager,
             userManager: userManager
         )
+    }
+    public func createSettingsViewModel() -> SettingsViewModel{
+        return SettingsViewModel(authenticationManager: self.authManager)
     }
 }

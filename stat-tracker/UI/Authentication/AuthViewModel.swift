@@ -1,5 +1,5 @@
 //
-//  LoginManager.swift
+//  AuthViewModel.swift
 //  stat-tracker
 //
 //  Created by Roni Koskinen on 6.3.2025.
@@ -42,67 +42,41 @@ class AuthViewModel: ObservableObject {
         loginCallIsLoading = true
         errorMessage = nil
 
-        guard let url = URL(string: Constants.API.URL + Constants.API.Auth.login) else {
-            AppLogger.debug("Error creating URL", category: "Authentication")
+        guard let url = URL(string: Constants.API.Auth.login) else {
+            AppLogger.debug("Error creating login URL", category: "Authentication")
             self.errorMessage = "Invalid login URL."
             self.loginCallIsLoading = false
             return
         }
-        
-        let body: [String: Any] = [
-            "username": credentials.username,
-            "password": credentials.password
-        ]
-        
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            self.errorMessage = "Invalid request data"
+            
+        guard let jsonData = try? JSONEncoder().encode(credentials) else {
+            self.errorMessage = "Invalid request data for login."
             self.loginCallIsLoading = false
             return
         }
+            
+        let loginResource = Resource(url: url, method: .post(jsonData), modelType: AuthResponse.self)
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        
-        urlSession.dataTask(with: request) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.loginCallIsLoading = false
+        Task { @MainActor in
+            defer { self.loginCallIsLoading = false }
 
-                if let error = error {
-                    AppLogger.debug("login error: " + error.localizedDescription, category: "Network")
-                    self.errorMessage = "Request error: \(error.localizedDescription)"
-                    return
-                }
+            do {
+                let decodedResponse = try await HTTPClient.shared.load(loginResource)
+                self.authManager.setAuthState(response: decodedResponse)
+                self.userManager.fetchOwnUser()
+                self.errorMessage = nil
+            } catch {
+                self.authManager.clearAuthState()
                 
-                guard let data = data,
-                      let httpResponse = response as? HTTPURLResponse else {
-                    self.errorMessage = "Invalid server response"
-                    return
-                }
-
-                if httpResponse.statusCode == 200 {
-                    do {
-                        let decodedResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
-                        self.authManager.setAuthState(response: decodedResponse)
-                        self.userManager.fetchOwnUser()
-                        
-                        self.errorMessage = nil
-                    } catch {
-                        self.authManager.clearAuthState()
-                        self.errorMessage = "Failed to decode response"
-                    }
+                if let networkError = error as? NetworkError {
+                    AppLogger.error("Login failed with network error: \(networkError.localizedDescription)", category: "Authentication")
+                    self.errorMessage = networkError.localizedDescription
                 } else {
-                    if let errorDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: String], let message = errorDict["message"] {
-                        self.errorMessage = message
-                    } else {
-                        self.errorMessage = "Login failed with status code: \(httpResponse.statusCode)"
-                    }
-                    self.authManager.clearAuthState()
+                    AppLogger.error("Login failed with unexpected error: \(error.localizedDescription)", category: "Authentication")
+                    self.errorMessage = "An unexpected error occurred during login."
                 }
             }
-        }.resume()
+        }
     }
 }
 
@@ -114,7 +88,7 @@ struct AuthResponse: Codable {
     public let name: String
 }
 
-struct Credentials {
+struct Credentials: Codable {
     public var username: String
     public var password: String
 }
