@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Game: Codable, Identifiable {
+public struct Game: Codable, Identifiable, Hashable {
     public let id: String
     public let league: String?
     public let gameType: String
@@ -21,4 +21,23 @@ public struct Game: Codable, Identifiable {
     public let penalties: Bool?
     public let createdAt: Date
     public let updatedAt: Date?
+}
+
+public extension Game {
+    var gameTypeEnum: GameType? { GameType(rawValue: gameType) }
+
+    func opponentUsername(forCurrentUser username: String) -> String {
+        homePlayer.username == username ? awayPlayer.username : homePlayer.username
+    }
+
+    func resultLabel(forCurrentUser username: String) -> String {
+        let isHome = homePlayer.username == username
+        let own = isHome ? homeScore : awayScore
+        let opp = isHome ? awayScore : homeScore
+        if own > opp { return "W" }
+        if own < opp { return "L" }
+        return "D"
+    }
+
+    var scoreLine: String { "\(homeScore) – \(awayScore)" }
 }

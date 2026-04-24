@@ -25,3 +25,9 @@ struct LoadingScreen: View {
         .foregroundColor(.white)
     }
 }
+
+#if DEBUG
+#Preview("Loading screen") {
+    LoadingScreen()
+}
+#endif

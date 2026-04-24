@@ -7,37 +7,99 @@
 
 import SwiftUI
 
-// MARK: - Factory Protocol
 protocol ViewModelFactory: ObservableObject {
     func createAuthViewModel() -> AuthViewModel
-    // Add methods for other view models here, e.g.:
-    // func createAddGameViewModel() -> AddGameViewModel
-    // func createStatsViewModel() -> StatsViewModel
+    func createSettingsViewModel() -> SettingsViewModel
+    func createGamesViewModel() -> GamesViewModel
+    func createAddGameViewModel() -> AddGameViewModel
+    func createLeaguesViewModel() -> LeaguesViewModel
+    func createCreateLeagueViewModel() -> CreateLeagueViewModel
+    func createJoinLeagueViewModel() -> JoinLeagueViewModel
+    func createLeagueDetailViewModel(league: League) -> LeagueDetailViewModel
+    func createProfileViewModel() -> ProfileViewModel
 }
 
-// MARK: - Concrete Factory
-class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
+@MainActor
+final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
     private let teamsManager: TeamsManager
     private let userManager: UserManagerImpl
-    private var authManager: AuthenticationManagerImpl
+    private let authManager: AuthenticationManagerImpl
+    private let gameManager: GameManagerImpl
+    private let leagueManager: LeagueManagerImpl
 
     public init(
         teamsManager: TeamsManager = TeamsManagerImpl(),
         authManager: AuthenticationManagerImpl,
-        userManager: UserManagerImpl
+        userManager: UserManagerImpl,
+        gameManager: GameManagerImpl,
+        leagueManager: LeagueManagerImpl
     ) {
         self.teamsManager = teamsManager
         self.authManager = authManager
         self.userManager = userManager
+        self.gameManager = gameManager
+        self.leagueManager = leagueManager
     }
-    
-    public func createAuthViewModel() -> AuthViewModel {
-        AuthViewModel(
-            authenticationManager: authManager,
-            userManager: userManager
+
+    func createAuthViewModel() -> AuthViewModel {
+        AuthViewModel(authenticationManager: authManager, userManager: userManager)
+    }
+
+    func createSettingsViewModel() -> SettingsViewModel {
+        SettingsViewModel(authenticationManager: authManager)
+    }
+
+    func createGamesViewModel() -> GamesViewModel {
+        GamesViewModel(gameManager: gameManager, userManager: userManager)
+    }
+
+    func createAddGameViewModel() -> AddGameViewModel {
+        AddGameViewModel(
+            gameManager: gameManager,
+            userManager: userManager,
+            teamsManager: teamsManager
         )
     }
-    public func createSettingsViewModel() -> SettingsViewModel{
-        return SettingsViewModel(authenticationManager: self.authManager)
+
+    func createLeaguesViewModel() -> LeaguesViewModel {
+        LeaguesViewModel(userManager: userManager)
+    }
+
+    func createCreateLeagueViewModel() -> CreateLeagueViewModel {
+        CreateLeagueViewModel(leagueManager: leagueManager, userManager: userManager)
+    }
+
+    func createJoinLeagueViewModel() -> JoinLeagueViewModel {
+        JoinLeagueViewModel(leagueManager: leagueManager, userManager: userManager)
+    }
+
+    func createLeagueDetailViewModel(league: League) -> LeagueDetailViewModel {
+        LeagueDetailViewModel(
+            league: league,
+            leagueManager: leagueManager,
+            userManager: userManager,
+            authManager: authManager
+        )
+    }
+
+    func createProfileViewModel() -> ProfileViewModel {
+        ProfileViewModel(userManager: userManager)
     }
 }
+
+#if DEBUG
+extension ViewModeFactoryImpl {
+    static func preview(profile: User? = PreviewSamples.userWithEverything) -> ViewModeFactoryImpl {
+        let auth = AuthenticationManagerImpl.shared
+        let user = UserManagerImpl.preview(profile: profile)
+        let game = GameManagerImpl()
+        let league = LeagueManagerImpl()
+        return ViewModeFactoryImpl(
+            authManager: auth,
+            userManager: user,
+            gameManager: game,
+            leagueManager: league
+        )
+    }
+}
+#endif

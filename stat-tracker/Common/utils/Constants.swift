@@ -7,9 +7,31 @@
 
 import Foundation
 
-public struct Constants {    
+public struct Constants {
     public struct API {
-        public static let URL = "https://game-stats-tracker-api.fly.dev"
+        public static let productionURL = "https://game-stats-tracker-api.fly.dev"
+        public static let localSimulatorURL = "http://localhost:3000"
+
+        private static let baseURLKey = "apiBaseURLOverride"
+
+        /// Base URL the HTTP client talks to. Reads an optional override from UserDefaults.
+        public static var URL: String {
+            if let override = UserDefaults.standard.string(forKey: baseURLKey),
+               !override.isEmpty {
+                return override.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            }
+            // default
+            return localSimulatorURL
+        }
+
+        /// Pass `nil` or empty string to clear and return to the default.
+        public static func setBaseURL(_ url: String?) {
+            if let url, !url.trimmingCharacters(in: .whitespaces).isEmpty {
+                UserDefaults.standard.set(url, forKey: baseURLKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: baseURLKey)
+            }
+        }
 
         public struct Auth {
             public static let login = "/api/login"
@@ -44,7 +66,7 @@ public struct Constants {
             public static let getGames = "/api/game"
         }
     }
-    
+
     public struct UserDefaultsKeys {
         public static let authToken = "authToken"
         public static let currentUsername = "username"

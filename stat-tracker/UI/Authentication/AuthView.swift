@@ -7,68 +7,108 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct AuthView: View {
-    @EnvironmentObject var authManager: AuthenticationManagerImpl
     @ObservedObject var viewModel: AuthViewModel
-    
-    @State private var credentials = Credentials(username: "", password: "")
-    @State private var isAuthenticated = false // This will be updated via onReceive from authManager
 
-    init(viewModel: AuthViewModel) {
-        self.viewModel = viewModel
-    }
-    
     var body: some View {
-        VStack {
-            TextField("Username", text: $credentials.username)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-            
-            SecureField("Password", text: $credentials.password)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-            
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .padding()
-            }
-            
-            if viewModel.overallLoading {
-                ProgressView("Authenticating...")
-                    .padding()
-            } else {
-                Button("Login") {
-                    viewModel.login(credentials: credentials)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    header
+
+                    VStack(spacing: 12) {
+                        TextField("Username", text: $viewModel.username)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .textFieldStyle(.roundedBorder)
+
+                        if viewModel.mode == .signUp {
+                            TextField("Display name", text: $viewModel.name)
+                                .textFieldStyle(.roundedBorder)
+
+                            TextField("Email", text: $viewModel.email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textFieldStyle(.roundedBorder)
+                        }
+
+                        SecureField("Password", text: $viewModel.password)
+                            .textFieldStyle(.roundedBorder)
+
+                        if viewModel.mode == .signUp {
+                            Picker("Profile visibility", selection: $viewModel.visibility) {
+                                ForEach(ProfileVisibility.allCases) { v in
+                                    Text(v.displayName).tag(v)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    if let error = viewModel.errorMessage {
+                        Text(error)
+                            .font(.callout)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+
+                    if viewModel.overallLoading {
+                        ProgressView()
+                            .padding()
+                    } else {
+                        Button(action: viewModel.submit) {
+                            Text(viewModel.mode == .login ? "Log in" : "Create account")
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(viewModel.isSubmitDisabled)
+                        .padding(.horizontal)
+                    }
+
+                    Button(action: viewModel.toggleMode) {
+                        Text(viewModel.mode == .login
+                             ? "Don't have an account? Sign up"
+                             : "Already have an account? Log in")
+                            .font(.footnote)
+                    }
                 }
-                .padding()
-                .buttonStyle(.borderedProminent)
-                .disabled(credentials.username.isEmpty || credentials.password.isEmpty || viewModel.overallLoading)
+                .padding(.vertical, 32)
             }
-            
-            if isAuthenticated {
-                Text("Authentication Successful!")
-                    .padding()
-            }
+            .navigationTitle(viewModel.mode == .login ? "Welcome back" : "Create account")
         }
-        .padding()
-        .onDisappear {
-            viewModel.errorMessage = nil
-            viewModel.overallLoading = false
-        }
-        .onReceive(authManager.$isAuthenticated) { authStatus in
-            isAuthenticated = authStatus
+    }
+
+    private var header: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(.yellow)
+            Text("Stat Tracker")
+                .font(.largeTitle.bold())
+            Text("Track your sports games with friends")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
     }
 }
 
-//struct AuthView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        let factory = AppViewModelFactory()
-//        let authViewModel = factory.createAuthViewModel()
-//        AuthView(viewModel: authViewModel)
-//            .environmentObject(AuthenticationManagerImpl())
-//    }
-//}
+#if DEBUG
+#Preview("Login") {
+    let auth = AuthenticationManagerImpl.shared
+    let user = UserManagerImpl(authenticationManager: auth)
+    let vm = AuthViewModel(authenticationManager: auth, userManager: user)
+    return AuthView(viewModel: vm)
+}
+
+#Preview("Sign up") {
+    let auth = AuthenticationManagerImpl.shared
+    let user = UserManagerImpl(authenticationManager: auth)
+    let vm = AuthViewModel(authenticationManager: auth, userManager: user)
+    vm.mode = .signUp
+    return AuthView(viewModel: vm)
+}
+#endif

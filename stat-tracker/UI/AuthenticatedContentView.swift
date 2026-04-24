@@ -5,7 +5,6 @@
 //  Created by Roni Koskinen on 7.6.2025.
 //
 
-import Foundation
 import SwiftUI
 
 struct AuthenticatedContentView: View {
@@ -16,42 +15,57 @@ struct AuthenticatedContentView: View {
     @AppStorage("isDarkMode") private var isDarkMode = true
 
     var body: some View {
-        NavigationView {
-            getTabBarView()
-                .navigationTitle("NHL Tracker")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            showSettings.toggle()
-                        }) {
-                            Image(systemName: "gearshape.fill")
-                                .imageScale(.large)
-                        }
-                    }
-                }
-                .sheet(isPresented: $showSettings) {
-                    SettingsView(viewModel: appFactory.createSettingsViewModel())
-                        .environmentObject(authenticationManager)
-                }
+        TabView {
+            NavigationStack {
+                GamesView(viewModel: appFactory.createGamesViewModel())
+                    .toolbar { settingsToolbar }
+            }
+            .tabItem { Label("Games", systemImage: "list.bullet.rectangle") }
+
+            NavigationStack {
+                AddGameView(viewModel: appFactory.createAddGameViewModel())
+                    .toolbar { settingsToolbar }
+            }
+            .tabItem { Label("Add", systemImage: "plus.circle.fill") }
+
+            NavigationStack {
+                LeaguesView(viewModel: appFactory.createLeaguesViewModel())
+                    .environmentObject(appFactory)
+                    .toolbar { settingsToolbar }
+            }
+            .tabItem { Label("Leagues", systemImage: "trophy") }
+
+            NavigationStack {
+                ProfileView(viewModel: appFactory.createProfileViewModel())
+                    .toolbar { settingsToolbar }
+            }
+            .tabItem { Label("Profile", systemImage: "person.crop.circle") }
         }
+        .tint(.blue)
         .preferredColorScheme(isDarkMode ? .dark : .light)
+        .sheet(isPresented: $showSettings) {
+            SettingsView(viewModel: appFactory.createSettingsViewModel())
+                .environmentObject(authenticationManager)
+        }
     }
 
-    func getTabBarView() -> some View {
-        return TabView {
-            Text("Add Game Tab Content")
-                .tabItem {
-                    Label("Add Game", systemImage: "plus.circle.fill")
-                }
-            Text("Games Tab Content")
-                .tabItem {
-                    Label("Games", systemImage: "chart.bar.fill")
-                }
-            Text("Own Profile")
-                .tabItem {
-                    Label("Games", systemImage: "person.crop.circle")
-                }
+    @ToolbarContentBuilder
+    private var settingsToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+                showSettings = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+            }
         }
-        .accentColor(.blue)
     }
 }
+
+#if DEBUG
+#Preview("Authenticated tabs") {
+    let factory = ViewModeFactoryImpl.preview()
+    return AuthenticatedContentView()
+        .environmentObject(AuthenticationManagerImpl.shared)
+        .environmentObject(factory)
+}
+#endif

@@ -1,28 +1,18 @@
 //
-//  UserManager.swift
-//  stat-tracker
+//  UserManager.swift
+//  stat-tracker
 //
-//  Created by Roni Koskinen on 28.1.2025.
+//  Created by Roni Koskinen on 28.1.2025.
 //
 
 import Foundation
 import Combine
 
-protocol UserManager: ObservableObject {
-    var currentUserProfile: User? { get }
-    var isLoading: Bool { get }
-    var errorMessage: String? { get }
-
-    func fetchOwnUser()
-    func fetchGamesForPlayer() -> [Game]?
-}
-
-final class UserManagerImpl: UserManager {
+final class UserManagerImpl: ObservableObject {
     @Published var currentUserProfile: User? = nil
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
 
-    private let urlSession = URLSession.shared
     private let authenticationManager: AuthenticationManagerImpl
     private var cancellables = Set<AnyCancellable>()
 
@@ -31,63 +21,129 @@ final class UserManagerImpl: UserManager {
         AppLogger.info("UserManager initialized.", category: "UserManagement")
 
         authenticationManager.$isAuthenticated
+            .removeDuplicates()
             .sink { [weak self] isAuthenticated in
+                guard let self else { return }
                 if isAuthenticated {
-                    self?.fetchOwnUser()
+                    Task { await self.fetchOwnUser() }
                 } else {
-                    self?.currentUserProfile = nil
-                    self?.errorMessage = nil
+                    Task { @MainActor in
+                        self.currentUserProfile = nil
+                        self.errorMessage = nil
+                    }
                     AppLogger.info("User logged out, clearing user profile.", category: "UserManagement")
                 }
             }
             .store(in: &cancellables)
     }
 
-    public func fetchOwnUser() {
-        guard !isLoading else {
-            AppLogger.debug("fetchOwnUser is already in progress.", category: "UserManagement")
-            return
-        }
+    // MARK: - Networking
 
+    @MainActor
+    func fetchOwnUser() async {
+        guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
-        AppLogger.debug("Attempting to fetch own user profile.", category: "UserManagement")
+        defer { isLoading = false }
 
         guard let url = URL(string: Constants.API.User.getOwnUser) else {
-            self.errorMessage = "Failed to create URL for user profile."
-            isLoading = false
-            AppLogger.error("Error creating URL for own user fetch.", category: "UserManagement")
+            errorMessage = "Failed to build user URL."
             return
         }
-        
-        let userResource = Resource(url: url, method: .get([]), modelType: User.self)
-        
-        Task { @MainActor in
-            defer { self.isLoading = false }
-            
-            do {
-                let decodedUser = try await HTTPClient.shared.load(userResource)
-                self.currentUserProfile = decodedUser
-                self.errorMessage = nil
-                AppLogger.info("Successfully fetched and decoded user profile for \(decodedUser.username).",
-                               category: "UserManagement")
-                AppLogger.info("\(decodedUser).", category: "UserManagement")
-            } catch {
-                if let networkError = error as? NetworkError {
-                    AppLogger.error("Error fetching user information: \(networkError.localizedDescription)", category: "Network")
-                    self.errorMessage = networkError.localizedDescription
-                } else {
-                    AppLogger.error("An unexpected error occurred during user fetch: \(error.localizedDescription)", category: "Network")
-                    self.errorMessage = "An unexpected error occurred."
-                }
-                self.currentUserProfile = nil
-            }
-            
+
+        let resource = Resource(url: url, method: .get([]), modelType: User.self)
+        do {
+            let user = try await HTTPClient.shared.load(resource)
+            self.currentUserProfile = user
+            AppLogger.info("Loaded own user \(user.username)", category: "UserManagement")
+        } catch NetworkError.unauthorized(_) {
+            authenticationManager.clearAuthState()
+            errorMessage = "Session expired. Please log in again."
+        } catch {
+            errorMessage = error.localizedDescription
+            AppLogger.error("fetchOwnUser failed: \(error.localizedDescription)", category: "UserManagement")
         }
     }
-    
-    func fetchGamesForPlayer() -> [Game]? {
-        AppLogger.debug("fetchGamesForPlayer called (not implemented)", category: "UserManagement")
-        return nil
+
+    func createUser(username: String, name: String, email: String, password: String, visibility: ProfileVisibility) async throws {
+        guard let url = URL(string: Constants.API.User.createUser) else {
+            throw NetworkError.invalidURL
+        }
+
+        struct Body: Encodable {
+            let username: String
+            let name: String
+            let email: String
+            let password: String
+            let visibility: ProfileVisibility
+        }
+        let body = Body(username: username, name: name, email: email, password: password, visibility: visibility)
+        let data = try JSONEncoder().encode(body)
+
+        let resource = Resource(url: url, method: .post(data), modelType: User.self)
+        _ = try await HTTPClient.shared.load(resource)
+    }
+
+    @MainActor
+    func updateVisibility(_ visibility: ProfileVisibility) async {
+        guard let url = URL(string: Constants.API.User.updateUserVisibility) else { return }
+        struct Body: Encodable { let visibility: ProfileVisibility }
+        guard let data = try? JSONEncoder().encode(Body(visibility: visibility)) else { return }
+
+        let resource = Resource(url: url, method: .post(data), modelType: EmptyResponse.self)
+        do {
+            _ = try await HTTPClient.shared.load(resource)
+            await fetchOwnUser()
+        } catch {
+            errorMessage = error.localizedDescription
+            AppLogger.error("updateVisibility failed: \(error.localizedDescription)", category: "UserManagement")
+        }
+    }
+
+    func sendFriendRequest(to username: String) async throws {
+        let path = String(format: Constants.API.FriendRequest.sendFriendRequest, username)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .post(nil), modelType: EmptyResponse.self)
+        _ = try await HTTPClient.shared.load(resource)
+    }
+
+    func acceptFriendRequest(from username: String) async throws {
+        let path = String(format: Constants.API.FriendRequest.acceptFriendRequest, username)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .post(nil), modelType: EmptyResponse.self)
+        _ = try await HTTPClient.shared.load(resource)
+        await fetchOwnUser()
+    }
+
+    func rejectFriendRequest(from username: String) async throws {
+        let path = String(format: Constants.API.FriendRequest.rejectFriendRequest, username)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
+        _ = try await HTTPClient.shared.load(resource)
+        await fetchOwnUser()
+    }
+
+    func removeFriend(_ username: String) async throws {
+        let path = String(format: Constants.API.FriendRequest.removeFriend, username)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
+        _ = try await HTTPClient.shared.load(resource)
+        await fetchOwnUser()
+    }
+
+    @MainActor
+    func clearError() {
+        errorMessage = nil
     }
 }
+
+#if DEBUG
+extension UserManagerImpl {
+    @MainActor
+    static func preview(profile: User?) -> UserManagerImpl {
+        let manager = UserManagerImpl(authenticationManager: AuthenticationManagerImpl.shared)
+        manager.currentUserProfile = profile
+        return manager
+    }
+}
+#endif
