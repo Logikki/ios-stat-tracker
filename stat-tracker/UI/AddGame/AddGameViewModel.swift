@@ -36,16 +36,49 @@ final class AddGameViewModel: ObservableObject {
     private let gameManager: GameManagerImpl
     private let userManager: UserManagerImpl
     private let teamsManager: TeamsManager
+    
+    // League context - when set, locks the league selection
+    private let preselectedLeague: League?
+    var isLeagueLocked: Bool { preselectedLeague != nil }
 
-    init(gameManager: GameManagerImpl, userManager: UserManagerImpl, teamsManager: TeamsManager) {
+    init(
+        gameManager: GameManagerImpl,
+        userManager: UserManagerImpl,
+        teamsManager: TeamsManager,
+        preselectedLeague: League? = nil
+    ) {
         self.gameManager = gameManager
         self.userManager = userManager
         self.teamsManager = teamsManager
+        self.preselectedLeague = preselectedLeague
+        
+        // If coming from a league, pre-select it
+        if let league = preselectedLeague {
+            self.selectedLeagueId = league.id
+            // Set game type to first available type in the league
+            if let firstType = league.gameTypes.first,
+               let gameType = GameType(rawValue: firstType) {
+                self.gameType = gameType
+            }
+        }
     }
 
     var leaguesForCurrentType: [League] {
+        // If league is locked, only show that league
+        if let locked = preselectedLeague {
+            return [locked]
+        }
+        
+        // Otherwise show all leagues that support this game type
         let userLeagues = userManager.currentUserProfile?.leagues ?? []
         return userLeagues.filter { $0.gameTypes.contains(gameType.rawValue) }
+    }
+    
+    var shouldShowLeaguePicker: Bool {
+        // Always show if there's a preselected league (to display it)
+        if preselectedLeague != nil { return true }
+        // Otherwise show if there are leagues available
+        return !leaguesForCurrentType.isEmpty
     }
 
     var nhlTeams: [NHLTeam] { teamsManager.getNHLTeams() }

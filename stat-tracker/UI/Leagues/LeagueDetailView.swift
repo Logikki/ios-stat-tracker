@@ -10,8 +10,10 @@ import SwiftUI
 struct LeagueDetailView: View {
     @ObservedObject var viewModel: LeagueDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var appFactory: ViewModeFactoryImpl
 
     @State private var showInvitationSheet = false
+    @State private var showAddGame = false
     @State private var confirmDelete = false
 
     var body: some View {
@@ -27,6 +29,28 @@ struct LeagueDetailView: View {
         }
         .navigationTitle(viewModel.league.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showAddGame = true
+                } label: {
+                    Label("Add Game", systemImage: "plus.circle.fill")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddGame) {
+            NavigationStack {
+                AddGameView(viewModel: appFactory.createAddGameViewModel(forLeague: viewModel.league))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                showAddGame = false
+                            }
+                        }
+                    }
+            }
+        }
         .alert(
             "Error",
             isPresented: Binding(

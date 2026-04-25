@@ -19,6 +19,13 @@ struct AddGameView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .disabled(viewModel.isLeagueLocked)
+                
+                if viewModel.isLeagueLocked {
+                    Text("Game type is limited to this league's supported types")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
 
             Section("Players") {
@@ -89,13 +96,27 @@ struct AddGameView: View {
                 Toggle("Penalties / shootout", isOn: $viewModel.penalties)
             }
 
-            if !viewModel.leaguesForCurrentType.isEmpty {
-                Section("League (optional)") {
-                    Picker("League", selection: $viewModel.selectedLeagueId) {
-                        Text("None").tag(String?.none)
-                        ForEach(viewModel.leaguesForCurrentType) { league in
-                            Text(league.name).tag(Optional(league.id))
+            if viewModel.shouldShowLeaguePicker {
+                Section {
+                    if viewModel.isLeagueLocked {
+                        // Show locked league (read-only)
+                        LabeledContent("League", value: viewModel.leaguesForCurrentType.first?.name ?? "")
+                    } else {
+                        // Show picker for selecting league
+                        Picker("League (optional)", selection: $viewModel.selectedLeagueId) {
+                            Text("None").tag(String?.none)
+                            ForEach(viewModel.leaguesForCurrentType) { league in
+                                Text(league.name).tag(Optional(league.id))
+                            }
                         }
+                    }
+                } header: {
+                    Text("League")
+                } footer: {
+                    if viewModel.isLeagueLocked {
+                        Text("This game will be added to the selected league")
+                    } else {
+                        Text("Optionally assign this game to a league")
                     }
                 }
             }

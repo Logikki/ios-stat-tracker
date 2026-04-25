@@ -11,47 +11,45 @@ struct GamesView: View {
     @ObservedObject var viewModel: GamesViewModel
 
     var body: some View {
-        Group {
-            if viewModel.games.isEmpty {
-                emptyState
-            } else {
-                List {
-                    ForEach(viewModel.games) { game in
-                        NavigationLink(value: game) {
-                            GameRowView(game: game, currentUsername: viewModel.currentUsername)
-                        }
-                    }
-                    .onDelete { indices in
-                        for idx in indices {
-                            viewModel.deleteGame(viewModel.games[idx])
-                        }
+        contentView
+            .navigationTitle("Games")
+            .navigationDestination(for: Game.self) { game in
+                GameDetailView(game: game, currentUsername: viewModel.currentUsername)
+            }
+            .refreshable {
+                await viewModel.refresh()
+            }
+            .alert(
+                "Error",
+                isPresented: Binding(
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } }
+                )
+            ) {
+                Button("OK") { viewModel.errorMessage = nil }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if viewModel.games.isEmpty {
+            emptyState
+        } else {
+            List {
+                ForEach(viewModel.games) { game in
+                    NavigationLink(value: game) {
+                        GameRowView(game: game, currentUsername: viewModel.currentUsername)
                     }
                 }
-                .listStyle(.insetGrouped)
+                .onDelete { indices in
+                    for idx in indices {
+                        viewModel.deleteGame(viewModel.games[idx])
+                    }
+                }
             }
-        }
-        .navigationTitle("Games")
-        .refreshable {
-            await viewModel.refresh()
-        }
-//        .task {
-//            if viewModel.games.isEmpty {
-//                await viewModel.refresh()
-//            }
-//        }
-        .navigationDestination(for: Game.self) { game in
-            GameDetailView(game: game, currentUsername: viewModel.currentUsername)
-        }
-        .alert(
-            "Error",
-            isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
-                set: { if !$0 { viewModel.errorMessage = nil } }
-            )
-        ) {
-            Button("OK") { viewModel.errorMessage = nil }
-        } message: {
-            Text(viewModel.errorMessage ?? "")
+            .listStyle(.insetGrouped)
         }
     }
 

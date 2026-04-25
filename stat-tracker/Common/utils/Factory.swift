@@ -12,6 +12,7 @@ protocol ViewModelFactory: ObservableObject {
     func createSettingsViewModel() -> SettingsViewModel
     func createGamesViewModel() -> GamesViewModel
     func createAddGameViewModel() -> AddGameViewModel
+    func createAddGameViewModel(forLeague league: League) -> AddGameViewModel
     func createLeaguesViewModel() -> LeaguesViewModel
     func createCreateLeagueViewModel() -> CreateLeagueViewModel
     func createJoinLeagueViewModel() -> JoinLeagueViewModel
@@ -58,6 +59,15 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
             gameManager: gameManager,
             userManager: userManager,
             teamsManager: teamsManager
+        )
+    }
+    
+    func createAddGameViewModel(forLeague league: League) -> AddGameViewModel {
+        AddGameViewModel(
+            gameManager: gameManager,
+            userManager: userManager,
+            teamsManager: teamsManager,
+            preselectedLeague: league
         )
     }
 
