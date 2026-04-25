@@ -16,12 +16,16 @@ public struct Constants {
 
         /// Base URL the HTTP client talks to. Reads an optional override from UserDefaults.
         public static var URL: String {
+            #if DEBUG
+            return localSimulatorURL
+            #else
             if let override = UserDefaults.standard.string(forKey: baseURLKey),
                !override.isEmpty {
                 return override.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             }
+            #endif
             // default
-            return localSimulatorURL
+            return productionURL
         }
 
         /// Pass `nil` or empty string to clear and return to the default.

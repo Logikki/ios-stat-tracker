@@ -46,8 +46,9 @@ struct LeaguesView: View {
                 }
             }
         }
-        .refreshable { await viewModel.refresh() }
-        .task { await viewModel.refresh() }
+        .refreshable { 
+            await viewModel.refresh() 
+        }
         .navigationDestination(for: League.self) { league in
             LeagueDetailView(viewModel: appFactory.createLeagueDetailViewModel(league: league))
         }

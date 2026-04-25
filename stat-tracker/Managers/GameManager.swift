@@ -7,35 +7,58 @@
 
 import Foundation
 
+@MainActor
 final class GameManagerImpl: ObservableObject {
     @Published private(set) var games: [Game] = []
     @Published private(set) var isLoading: Bool = false
     @Published var errorMessage: String? = nil
+    
+    private var fetchTask: Task<Void, Never>?
 
     init() {
         AppLogger.info("GameManager initialized.", category: "Games")
     }
 
-    @MainActor
     func fetchGames() async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-
-        guard let url = URL(string: Constants.API.Game.getGames) else {
-            errorMessage = "Failed to build games URL."
-            return
+        // Cancel any existing fetch task
+        fetchTask?.cancel()
+        
+        guard !isLoading else { 
+            AppLogger.info("Fetch already in progress, skipping duplicate call", category: "Games")
+            return 
         }
+        
+        fetchTask = Task { @MainActor in
+            isLoading = true
+            errorMessage = nil
+            defer { isLoading = false }
 
-        let resource = Resource(url: url, method: .get([]), modelType: [Game].self)
-        do {
-            let fetched = try await HTTPClient.shared.load(resource)
-            self.games = fetched.sorted(by: { $0.createdAt > $1.createdAt })
-        } catch {
-            errorMessage = error.localizedDescription
-            AppLogger.error("fetchGames failed: \(error.localizedDescription)", category: "Games")
+            guard let url = URL(string: Constants.API.Game.getGames) else {
+                errorMessage = "Failed to build games URL."
+                return
+            }
+
+            let resource = Resource(url: url, method: .get([]), modelType: [Game].self)
+            do {
+                let fetched = try await HTTPClient.shared.load(resource)
+                
+                guard !Task.isCancelled else {
+                    AppLogger.info("Fetch games task was cancelled", category: "Games")
+                    return
+                }
+                
+                self.games = fetched.sorted(by: { $0.createdAt > $1.createdAt })
+            } catch is CancellationError {
+                AppLogger.info("Fetch games request cancelled", category: "Games")
+            } catch {
+                if (error as NSError).code != NSURLErrorCancelled {
+                    errorMessage = error.localizedDescription
+                    AppLogger.error("fetchGames failed: \(error.localizedDescription)", category: "Games")
+                }
+            }
         }
+        
+        await fetchTask?.value
     }
 
     func createGame(_ payload: CreateGamePayload) async throws -> Game {
@@ -56,15 +79,12 @@ final class GameManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        await MainActor.run {
-            self.games.removeAll(where: { $0.id == id })
-        }
+        self.games.removeAll(where: { $0.id == id })
     }
 }
 
 #if DEBUG
 extension GameManagerImpl {
-    @MainActor
     static func preview(games: [Game]) -> GameManagerImpl {
         let manager = GameManagerImpl()
         manager.games = games

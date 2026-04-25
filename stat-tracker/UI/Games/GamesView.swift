@@ -34,11 +34,11 @@ struct GamesView: View {
         .refreshable {
             await viewModel.refresh()
         }
-        .task {
-            if viewModel.games.isEmpty {
-                await viewModel.refresh()
-            }
-        }
+//        .task {
+//            if viewModel.games.isEmpty {
+//                await viewModel.refresh()
+//            }
+//        }
         .navigationDestination(for: Game.self) { game in
             GameDetailView(game: game, currentUsername: viewModel.currentUsername)
         }

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class AppState: ObservableObject {
     @Published var isLoadingInitialData: Bool = true
     @Published var showAuthView: Bool = true
@@ -25,11 +26,15 @@ class AppState: ObservableObject {
     }
     
     private func setup() {
+        // Combine auth and loading states with debouncing to prevent rapid updates
         Publishers.CombineLatest(
             authManager.$isAuthenticated,
             userManager.$isLoading
         )
-        .sink { [unowned self] isAuthenticated, userManagerIsLoading in
+        .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+        .sink { [weak self] isAuthenticated, userManagerIsLoading in
+            guard let self else { return }
+            
             self.showAuthView = !isAuthenticated
             
             if isAuthenticated {
@@ -40,20 +45,17 @@ class AppState: ObservableObject {
         }
         .store(in: &cancellables)
         
+        // Handle error messages
         userManager.$errorMessage
-            .sink { [unowned self] errorMessage in
-                if let errorMessage = errorMessage {
-                    self.errorMessage = errorMessage
-                } else {
-                    self.errorMessage = nil
-                }
+            .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+            .sink { [weak self] errorMessage in
+                guard let self else { return }
+                self.errorMessage = errorMessage
             }
             .store(in: &cancellables)
     }
-}
-
-extension AppState {
-    public func clearError() {
+    
+    func clearError() {
         self.errorMessage = nil
     }
 }

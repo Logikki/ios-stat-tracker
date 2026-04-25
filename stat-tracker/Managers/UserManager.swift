@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class UserManagerImpl: ObservableObject {
     @Published var currentUserProfile: User? = nil
     @Published var isLoading: Bool = false
@@ -15,23 +16,26 @@ final class UserManagerImpl: ObservableObject {
 
     private let authenticationManager: AuthenticationManagerImpl
     private var cancellables = Set<AnyCancellable>()
+    private var fetchTask: Task<Void, Never>?
 
     init(authenticationManager: AuthenticationManagerImpl) {
         self.authenticationManager = authenticationManager
         AppLogger.info("UserManager initialized.", category: "UserManagement")
 
+        // Observe auth changes but debounce to prevent multiple rapid calls
         authenticationManager.$isAuthenticated
             .removeDuplicates()
             .sink { [weak self] isAuthenticated in
                 guard let self else { return }
-                if isAuthenticated {
-                    Task { await self.fetchOwnUser() }
-                } else {
-                    Task { @MainActor in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    if isAuthenticated {
+                        await self.fetchOwnUser()
+                    } else {
                         self.currentUserProfile = nil
                         self.errorMessage = nil
+                        AppLogger.info("User logged out, clearing user profile.", category: "UserManagement")
                     }
-                    AppLogger.info("User logged out, clearing user profile.", category: "UserManagement")
                 }
             }
             .store(in: &cancellables)
@@ -39,30 +43,52 @@ final class UserManagerImpl: ObservableObject {
 
     // MARK: - Networking
 
-    @MainActor
     func fetchOwnUser() async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-
-        guard let url = URL(string: Constants.API.User.getOwnUser) else {
-            errorMessage = "Failed to build user URL."
-            return
+        // Cancel any existing fetch task to prevent race conditions
+        fetchTask?.cancel()
+        
+        // Don't allow multiple simultaneous loads
+        guard !isLoading else { 
+            AppLogger.info("Fetch already in progress, skipping duplicate call", category: "UserManagement")
+            return 
         }
+        
+        fetchTask = Task { @MainActor in
+            isLoading = true
+            errorMessage = nil
+            defer { isLoading = false }
 
-        let resource = Resource(url: url, method: .get([]), modelType: User.self)
-        do {
-            let user = try await HTTPClient.shared.load(resource)
-            self.currentUserProfile = user
-            AppLogger.info("Loaded own user \(user.username)", category: "UserManagement")
-        } catch NetworkError.unauthorized(_) {
-            authenticationManager.clearAuthState()
-            errorMessage = "Session expired. Please log in again."
-        } catch {
-            errorMessage = error.localizedDescription
-            AppLogger.error("fetchOwnUser failed: \(error.localizedDescription)", category: "UserManagement")
+            guard let url = URL(string: Constants.API.User.getOwnUser) else {
+                errorMessage = "Failed to build user URL."
+                return
+            }
+
+            let resource = Resource(url: url, method: .get([]), modelType: User.self)
+            do {
+                let user = try await HTTPClient.shared.load(resource)
+                
+                guard !Task.isCancelled else {
+                    AppLogger.info("Fetch task was cancelled", category: "UserManagement")
+                    return
+                }
+                
+                self.currentUserProfile = user
+                AppLogger.info("Loaded own user \(user.username)", category: "UserManagement")
+            } catch is CancellationError {
+                AppLogger.info("Fetch request cancelled", category: "UserManagement")
+            } catch NetworkError.unauthorized(_) {
+                authenticationManager.clearAuthState()
+                errorMessage = "Session expired. Please log in again."
+            } catch {
+                // Don't report cancellation errors
+                if (error as NSError).code != NSURLErrorCancelled {
+                    errorMessage = error.localizedDescription
+                    AppLogger.error("fetchOwnUser failed: \(error.localizedDescription)", category: "UserManagement")
+                }
+            }
         }
+        
+        await fetchTask?.value
     }
 
     func createUser(username: String, name: String, email: String, password: String, visibility: ProfileVisibility) async throws {
@@ -84,7 +110,6 @@ final class UserManagerImpl: ObservableObject {
         _ = try await HTTPClient.shared.load(resource)
     }
 
-    @MainActor
     func updateVisibility(_ visibility: ProfileVisibility) async {
         guard let url = URL(string: Constants.API.User.updateUserVisibility) else { return }
         struct Body: Encodable { let visibility: ProfileVisibility }
@@ -95,7 +120,9 @@ final class UserManagerImpl: ObservableObject {
             _ = try await HTTPClient.shared.load(resource)
             await fetchOwnUser()
         } catch {
-            errorMessage = error.localizedDescription
+            await MainActor.run {
+                errorMessage = error.localizedDescription
+            }
             AppLogger.error("updateVisibility failed: \(error.localizedDescription)", category: "UserManagement")
         }
     }
@@ -131,7 +158,6 @@ final class UserManagerImpl: ObservableObject {
         await fetchOwnUser()
     }
 
-    @MainActor
     func clearError() {
         errorMessage = nil
     }
