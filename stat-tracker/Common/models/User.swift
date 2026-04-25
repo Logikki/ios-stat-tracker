@@ -12,11 +12,13 @@ public enum ProfileVisibility: String, Codable, CaseIterable, Identifiable, Hash
     case Private
     case Friends
 
-    public var id: String { rawValue }
+    public var id: String {
+        rawValue
+    }
 
     public var displayName: String {
         switch self {
-        case .Public:  return "Public"
+        case .Public: return "Public"
         case .Private: return "Private"
         case .Friends: return "Friends only"
         }

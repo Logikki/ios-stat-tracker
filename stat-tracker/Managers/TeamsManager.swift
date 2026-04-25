@@ -11,8 +11,8 @@ protocol TeamsManager {
 
 final class TeamsManagerImpl: TeamsManager {
     let availableTeams = NHLTeam.allCases
-    
-    public func getNHLTeams() -> [NHLTeam] {
+
+    func getNHLTeams() -> [NHLTeam] {
         return availableTeams
     }
 }

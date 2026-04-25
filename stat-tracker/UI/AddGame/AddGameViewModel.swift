@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 25.4.2026.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class AddGameViewModel: ObservableObject {
@@ -36,10 +36,12 @@ final class AddGameViewModel: ObservableObject {
     private let gameManager: GameManagerImpl
     private let userManager: UserManagerImpl
     private let teamsManager: TeamsManager
-    
+
     // League context - when set, locks the league selection
     private let preselectedLeague: League?
-    var isLeagueLocked: Bool { preselectedLeague != nil }
+    var isLeagueLocked: Bool {
+        preselectedLeague != nil
+    }
 
     init(
         gameManager: GameManagerImpl,
@@ -51,13 +53,14 @@ final class AddGameViewModel: ObservableObject {
         self.userManager = userManager
         self.teamsManager = teamsManager
         self.preselectedLeague = preselectedLeague
-        
+
         // If coming from a league, pre-select it
         if let league = preselectedLeague {
-            self.selectedLeagueId = league.id
+            selectedLeagueId = league.id
             // Set game type to first available type in the league
             if let firstType = league.gameTypes.first,
-               let gameType = GameType(rawValue: firstType) {
+               let gameType = GameType(rawValue: firstType)
+            {
                 self.gameType = gameType
             }
         }
@@ -68,12 +71,12 @@ final class AddGameViewModel: ObservableObject {
         if let locked = preselectedLeague {
             return [locked]
         }
-        
+
         // Otherwise show all leagues that support this game type
         let userLeagues = userManager.currentUserProfile?.leagues ?? []
         return userLeagues.filter { $0.gameTypes.contains(gameType.rawValue) }
     }
-    
+
     var shouldShowLeaguePicker: Bool {
         // Always show if there's a preselected league (to display it)
         if preselectedLeague != nil { return true }
@@ -81,7 +84,9 @@ final class AddGameViewModel: ObservableObject {
         return !leaguesForCurrentType.isEmpty
     }
 
-    var nhlTeams: [NHLTeam] { teamsManager.getNHLTeams() }
+    var nhlTeams: [NHLTeam] {
+        teamsManager.getNHLTeams()
+    }
 
     /// Friends + everyone in any of my leagues — unique by username, alphabetical.
     var availableOpponents: [LightUser] {
@@ -99,7 +104,9 @@ final class AddGameViewModel: ObservableObject {
         return pool.sorted(by: { $0.username.lowercased() < $1.username.lowercased() })
     }
 
-    var canPickFromList: Bool { !availableOpponents.isEmpty }
+    var canPickFromList: Bool {
+        !availableOpponents.isEmpty
+    }
 
     var canSubmit: Bool {
         guard !opponentUsername.trimmingCharacters(in: .whitespaces).isEmpty,
@@ -125,12 +132,12 @@ final class AddGameViewModel: ObservableObject {
     }
 
     #if DEBUG
-    static func preview(profile: User? = PreviewSamples.userWithEverything) -> AddGameViewModel {
-        let auth = AuthenticationManagerImpl.shared
-        let user = UserManagerImpl.preview(profile: profile)
-        let game = GameManagerImpl()
-        return AddGameViewModel(gameManager: game, userManager: user, teamsManager: TeamsManagerImpl())
-    }
+        static func preview(profile: User? = PreviewSamples.userWithEverything) -> AddGameViewModel {
+            let auth = AuthenticationManagerImpl.shared
+            let user = UserManagerImpl.preview(profile: profile)
+            let game = GameManagerImpl()
+            return AddGameViewModel(gameManager: game, userManager: user, teamsManager: TeamsManagerImpl())
+        }
     #endif
 
     func submit() {

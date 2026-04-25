@@ -12,7 +12,7 @@ final class GameManagerImpl: ObservableObject {
     @Published private(set) var games: [Game] = []
     @Published private(set) var isLoading: Bool = false
     @Published var errorMessage: String? = nil
-    
+
     private var fetchTask: Task<Void, Never>?
 
     init() {
@@ -22,12 +22,12 @@ final class GameManagerImpl: ObservableObject {
     func fetchGames() async {
         // Cancel any existing fetch task
         fetchTask?.cancel()
-        
-        guard !isLoading else { 
+
+        guard !isLoading else {
             AppLogger.info("Fetch already in progress, skipping duplicate call", category: "Games")
-            return 
+            return
         }
-        
+
         fetchTask = Task { @MainActor in
             isLoading = true
             errorMessage = nil
@@ -41,12 +41,12 @@ final class GameManagerImpl: ObservableObject {
             let resource = Resource(url: url, method: .get([]), modelType: [Game].self)
             do {
                 let fetched = try await HTTPClient.shared.load(resource)
-                
+
                 guard !Task.isCancelled else {
                     AppLogger.info("Fetch games task was cancelled", category: "Games")
                     return
                 }
-                
+
                 self.games = fetched.sorted(by: { $0.createdAt > $1.createdAt })
             } catch is CancellationError {
                 AppLogger.info("Fetch games request cancelled", category: "Games")
@@ -57,7 +57,7 @@ final class GameManagerImpl: ObservableObject {
                 }
             }
         }
-        
+
         await fetchTask?.value
     }
 
@@ -79,18 +79,18 @@ final class GameManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        self.games.removeAll(where: { $0.id == id })
+        games.removeAll(where: { $0.id == id })
     }
 }
 
 #if DEBUG
-extension GameManagerImpl {
-    static func preview(games: [Game]) -> GameManagerImpl {
-        let manager = GameManagerImpl()
-        manager.games = games
-        return manager
+    extension GameManagerImpl {
+        static func preview(games: [Game]) -> GameManagerImpl {
+            let manager = GameManagerImpl()
+            manager.games = games
+            return manager
+        }
     }
-}
 #endif
 
 public struct CreateGamePayload: Encodable {

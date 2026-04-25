@@ -11,7 +11,9 @@ public enum GameType: String, Codable, CaseIterable, Identifiable, Hashable {
     case NHL
     case FIFA
 
-    public var id: String { rawValue }
+    public var id: String {
+        rawValue
+    }
 
     public var displayName: String {
         switch self {

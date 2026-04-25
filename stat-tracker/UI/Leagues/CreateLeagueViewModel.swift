@@ -28,9 +28,9 @@ final class CreateLeagueViewModel: ObservableObject {
 
     var canSubmit: Bool {
         !isSubmitting &&
-        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !gameTypes.isEmpty &&
-        userManager.currentUserProfile != nil
+            !name.trimmingCharacters(in: .whitespaces).isEmpty &&
+            !gameTypes.isEmpty &&
+            userManager.currentUserProfile != nil
     }
 
     func toggle(_ type: GameType) {
@@ -38,10 +38,10 @@ final class CreateLeagueViewModel: ObservableObject {
     }
 
     #if DEBUG
-    static func preview() -> CreateLeagueViewModel {
-        let user = UserManagerImpl.preview(profile: PreviewSamples.userWithEverything)
-        return CreateLeagueViewModel(leagueManager: LeagueManagerImpl(), userManager: user)
-    }
+        static func preview() -> CreateLeagueViewModel {
+            let user = UserManagerImpl.preview(profile: PreviewSamples.userWithEverything)
+            return CreateLeagueViewModel(leagueManager: LeagueManagerImpl(), userManager: user)
+        }
     #endif
 
     func submit(onSuccess: @escaping () -> Void) {

@@ -24,7 +24,9 @@ public struct Game: Codable, Identifiable, Hashable {
 }
 
 public extension Game {
-    var gameTypeEnum: GameType? { GameType(rawValue: gameType) }
+    var gameTypeEnum: GameType? {
+        GameType(rawValue: gameType)
+    }
 
     func opponentUsername(forCurrentUser username: String) -> String {
         homePlayer.username == username ? awayPlayer.username : homePlayer.username
@@ -39,5 +41,7 @@ public extension Game {
         return "D"
     }
 
-    var scoreLine: String { "\(homeScore) – \(awayScore)" }
+    var scoreLine: String {
+        "\(homeScore) – \(awayScore)"
+    }
 }

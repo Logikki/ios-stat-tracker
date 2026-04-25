@@ -1,29 +1,26 @@
 //
 //  UserEntity+CoreDataProperties.swift
-//  
+//
 //
 //  Created by Roni Koskinen on 11.7.2025.
 //
 //
 
-import Foundation
 import CoreData
+import Foundation
 
-
-extension UserEntity {
-
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<UserEntity> {
+public extension UserEntity {
+    @nonobjc class func fetchRequest() -> NSFetchRequest<UserEntity> {
         return NSFetchRequest<UserEntity>(entityName: "UserEntity")
     }
 
-    @NSManaged public var id: String?
-    @NSManaged public var name: String?
-    @NSManaged public var profileVisibility: ProfileVisibility?
-    @NSManaged public var username: String?
-    @NSManaged public var email: String?
-    @NSManaged public var friends: [LightUser]?
-    @NSManaged public var friendRequests: [LightUser]?
-    @NSManaged public var leagues: [League]?
-    @NSManaged public var matches: [Game]?
-
+    @NSManaged var id: String?
+    @NSManaged var name: String?
+    @NSManaged var profileVisibility: ProfileVisibility?
+    @NSManaged var username: String?
+    @NSManaged var email: String?
+    @NSManaged var friends: [LightUser]?
+    @NSManaged var friendRequests: [LightUser]?
+    @NSManaged var leagues: [League]?
+    @NSManaged var matches: [Game]?
 }

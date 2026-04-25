@@ -119,7 +119,6 @@ struct ProfileView: View {
         }
     }
 
-    @ViewBuilder
     private func friendsSection(user: User) -> some View {
         Section("Friends (\(user.friends.count))") {
             if user.friends.isEmpty {
@@ -179,21 +178,21 @@ private struct StatTile: View {
 }
 
 #if DEBUG
-#Preview("Profile – populated") {
-    NavigationStack {
-        ProfileView(viewModel: ProfileViewModel.preview(profile: PreviewSamples.userWithEverything))
+    #Preview("Profile – populated") {
+        NavigationStack {
+            ProfileView(viewModel: ProfileViewModel.preview(profile: PreviewSamples.userWithEverything))
+        }
     }
-}
 
-#Preview("Profile – empty") {
-    NavigationStack {
-        ProfileView(viewModel: ProfileViewModel.preview(profile: PreviewSamples.userEmpty))
+    #Preview("Profile – empty") {
+        NavigationStack {
+            ProfileView(viewModel: ProfileViewModel.preview(profile: PreviewSamples.userEmpty))
+        }
     }
-}
 
-#Preview("Profile – loading") {
-    NavigationStack {
-        ProfileView(viewModel: ProfileViewModel.preview(profile: nil))
+    #Preview("Profile – loading") {
+        NavigationStack {
+            ProfileView(viewModel: ProfileViewModel.preview(profile: nil))
+        }
     }
-}
 #endif

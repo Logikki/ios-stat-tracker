@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import os.log
+import SwiftUI
 
 protocol AuthenticationManager {
     func setAuthState(response: AuthResponse)
@@ -29,38 +29,38 @@ class AuthenticationManagerImpl: AuthenticationManager, ObservableObject {
     }
 
     func setAuthState(response: AuthResponse) {
-        self.authToken = response.token
-        self.currentUser = response
+        authToken = response.token
+        currentUser = response
         UserDefaults.standard.set(response.token, forKey: Constants.UserDefaultsKeys.authToken)
         UserDefaults.standard.set(response.username, forKey: Constants.UserDefaultsKeys.currentUsername)
         UserDefaults.standard.set(response.name, forKey: Constants.UserDefaultsKeys.currentName)
-        self.isAuthenticated = true
+        isAuthenticated = true
         AppLogger.info("Auth state set: User '\(response.username)' logged in.", category: "Authentication")
     }
 
     func clearAuthState() {
-        self.authToken = nil
-        self.currentUser = nil
+        authToken = nil
+        currentUser = nil
         UserDefaults.standard.removeObject(forKey: Constants.UserDefaultsKeys.authToken)
         UserDefaults.standard.removeObject(forKey: Constants.UserDefaultsKeys.currentUsername)
         UserDefaults.standard.removeObject(forKey: Constants.UserDefaultsKeys.currentName)
-        self.isAuthenticated = false
+        isAuthenticated = false
         AppLogger.info("Auth state cleared: User logged out.", category: "Authentication")
     }
 
     func loadAuthState() {
         if let token = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.authToken),
            let username = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.currentUsername),
-           let name = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.currentName) {
-            
-            self.authToken = token
-            self.currentUser = AuthResponse(token: token, username: username, name: name)
-            self.isAuthenticated = true
+           let name = UserDefaults.standard.string(forKey: Constants.UserDefaultsKeys.currentName)
+        {
+            authToken = token
+            currentUser = AuthResponse(token: token, username: username, name: name)
+            isAuthenticated = true
             AppLogger.info("Loaded existing auth state from UserDefaults.", category: "Authentication")
         } else {
-            self.isAuthenticated = false
-            self.authToken = nil
-            self.currentUser = nil
+            isAuthenticated = false
+            authToken = nil
+            currentUser = nil
             AppLogger.info("No existing auth state found in UserDefaults.", category: "Authentication")
         }
     }

@@ -31,7 +31,7 @@ struct GamesView: View {
                 Text(viewModel.errorMessage ?? "")
             }
     }
-    
+
     @ViewBuilder
     private var contentView: some View {
         if viewModel.games.isEmpty {
@@ -112,7 +112,7 @@ struct GameRowView: View {
         switch label {
         case "W": return .green
         case "L": return .red
-        default:  return .gray
+        default: return .gray
         }
     }
 }
@@ -157,35 +157,35 @@ struct GameDetailView: View {
         switch game.resultLabel(forCurrentUser: username) {
         case "W": return "Win"
         case "L": return "Loss"
-        default:  return "Draw"
+        default: return "Draw"
         }
     }
 }
 
 #if DEBUG
-#Preview("Games – list") {
-    NavigationStack {
-        GamesView(viewModel: GamesViewModel.preview(games: PreviewSamples.games, includeProfile: true))
+    #Preview("Games – list") {
+        NavigationStack {
+            GamesView(viewModel: GamesViewModel.preview(games: PreviewSamples.games, includeProfile: true))
+        }
     }
-}
 
-#Preview("Games – empty") {
-    NavigationStack {
-        GamesView(viewModel: GamesViewModel.preview(games: [], includeProfile: true))
+    #Preview("Games – empty") {
+        NavigationStack {
+            GamesView(viewModel: GamesViewModel.preview(games: [], includeProfile: true))
+        }
     }
-}
 
-#Preview("Game row") {
-    List {
-        GameRowView(game: PreviewSamples.nhlGameRecent, currentUsername: "alice")
-        GameRowView(game: PreviewSamples.nhlGameLoss, currentUsername: "alice")
-        GameRowView(game: PreviewSamples.fifaGame, currentUsername: "alice")
+    #Preview("Game row") {
+        List {
+            GameRowView(game: PreviewSamples.nhlGameRecent, currentUsername: "alice")
+            GameRowView(game: PreviewSamples.nhlGameLoss, currentUsername: "alice")
+            GameRowView(game: PreviewSamples.fifaGame, currentUsername: "alice")
+        }
     }
-}
 
-#Preview("Game detail") {
-    NavigationStack {
-        GameDetailView(game: PreviewSamples.nhlGameRecent, currentUsername: "alice")
+    #Preview("Game detail") {
+        NavigationStack {
+            GameDetailView(game: PreviewSamples.nhlGameRecent, currentUsername: "alice")
+        }
     }
-}
 #endif

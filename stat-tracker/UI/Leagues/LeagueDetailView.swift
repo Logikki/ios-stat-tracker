@@ -190,21 +190,21 @@ struct LeagueDetailView: View {
 }
 
 #if DEBUG
-#Preview("League detail – with matches") {
-    NavigationStack {
-        LeagueDetailView(viewModel: LeagueDetailViewModel.preview(league: PreviewSamples.leagueWithMatches))
+    #Preview("League detail – with matches") {
+        NavigationStack {
+            LeagueDetailView(viewModel: LeagueDetailViewModel.preview(league: PreviewSamples.leagueWithMatches))
+        }
     }
-}
 
-#Preview("League detail – empty matches") {
-    NavigationStack {
-        LeagueDetailView(viewModel: LeagueDetailViewModel.preview(league: PreviewSamples.leagueEmpty, asAdmin: false))
+    #Preview("League detail – empty matches") {
+        NavigationStack {
+            LeagueDetailView(viewModel: LeagueDetailViewModel.preview(league: PreviewSamples.leagueEmpty, asAdmin: false))
+        }
     }
-}
 
-#Preview("Invitation sheet") {
-    InvitationCodeSheet(code: "f47ac10b-58cc-4372-a567-0e02b2c3d479")
-}
+    #Preview("Invitation sheet") {
+        InvitationCodeSheet(code: "f47ac10b-58cc-4372-a567-0e02b2c3d479")
+    }
 #endif
 
 struct InvitationCodeSheet: View {

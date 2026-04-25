@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 25.4.2026.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
@@ -25,7 +25,9 @@ final class ProfileViewModel: ObservableObject {
             .assign(to: &$user)
     }
 
-    func refresh() async { await userManager.fetchOwnUser() }
+    func refresh() async {
+        await userManager.fetchOwnUser()
+    }
 
     var stats: PlayerStats {
         guard let username = user?.username, let matches = user?.matches else { return .empty }
@@ -74,10 +76,10 @@ final class ProfileViewModel: ObservableObject {
     }
 
     #if DEBUG
-    static func preview(profile: User?) -> ProfileViewModel {
-        let user = UserManagerImpl.preview(profile: profile)
-        return ProfileViewModel(userManager: user)
-    }
+        static func preview(profile: User?) -> ProfileViewModel {
+            let user = UserManagerImpl.preview(profile: profile)
+            return ProfileViewModel(userManager: user)
+        }
     #endif
 }
 
@@ -116,5 +118,7 @@ struct PlayerStats {
         self.init(played: played, wins: wins, draws: draws, losses: losses, goalsFor: gf, goalsAgainst: ga)
     }
 
-    var winRate: Double { played == 0 ? 0 : Double(wins) / Double(played) }
+    var winRate: Double {
+        played == 0 ? 0 : Double(wins) / Double(played)
+    }
 }

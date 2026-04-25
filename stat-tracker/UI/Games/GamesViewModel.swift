@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 7.6.2025.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class GamesViewModel: ObservableObject {
@@ -35,7 +35,9 @@ final class GamesViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    var currentUsername: String? { userManager.currentUserProfile?.username }
+    var currentUsername: String? {
+        userManager.currentUserProfile?.username
+    }
 
     func refresh() async {
         isLoading = true
@@ -56,14 +58,14 @@ final class GamesViewModel: ObservableObject {
 }
 
 #if DEBUG
-extension GamesViewModel {
-    static func preview(games: [Game], includeProfile: Bool) -> GamesViewModel {
-        let auth = AuthenticationManagerImpl.shared
-        let user = UserManagerImpl.preview(profile: includeProfile ? PreviewSamples.userWithEverything : nil)
-        let game = GameManagerImpl.preview(games: games)
-        let vm = GamesViewModel(gameManager: game, userManager: user)
-        vm.games = games
-        return vm
+    extension GamesViewModel {
+        static func preview(games: [Game], includeProfile: Bool) -> GamesViewModel {
+            let auth = AuthenticationManagerImpl.shared
+            let user = UserManagerImpl.preview(profile: includeProfile ? PreviewSamples.userWithEverything : nil)
+            let game = GameManagerImpl.preview(games: games)
+            let vm = GamesViewModel(gameManager: game, userManager: user)
+            vm.games = games
+            return vm
+        }
     }
-}
 #endif

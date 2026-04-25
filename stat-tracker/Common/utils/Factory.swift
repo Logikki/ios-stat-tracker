@@ -28,7 +28,7 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
     private let gameManager: GameManagerImpl
     private let leagueManager: LeagueManagerImpl
 
-    public init(
+    init(
         teamsManager: TeamsManager = TeamsManagerImpl(),
         authManager: AuthenticationManagerImpl,
         userManager: UserManagerImpl,
@@ -61,7 +61,7 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
             teamsManager: teamsManager
         )
     }
-    
+
     func createAddGameViewModel(forLeague league: League) -> AddGameViewModel {
         AddGameViewModel(
             gameManager: gameManager,
@@ -98,18 +98,18 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
 }
 
 #if DEBUG
-extension ViewModeFactoryImpl {
-    static func preview(profile: User? = PreviewSamples.userWithEverything) -> ViewModeFactoryImpl {
-        let auth = AuthenticationManagerImpl.shared
-        let user = UserManagerImpl.preview(profile: profile)
-        let game = GameManagerImpl()
-        let league = LeagueManagerImpl()
-        return ViewModeFactoryImpl(
-            authManager: auth,
-            userManager: user,
-            gameManager: game,
-            leagueManager: league
-        )
+    extension ViewModeFactoryImpl {
+        static func preview(profile: User? = PreviewSamples.userWithEverything) -> ViewModeFactoryImpl {
+            let auth = AuthenticationManagerImpl.shared
+            let user = UserManagerImpl.preview(profile: profile)
+            let game = GameManagerImpl()
+            let league = LeagueManagerImpl()
+            return ViewModeFactoryImpl(
+                authManager: auth,
+                userManager: user,
+                gameManager: game,
+                leagueManager: league
+            )
+        }
     }
-}
 #endif

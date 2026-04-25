@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 6.3.2025.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 enum AuthMode: Hashable {
     case login
@@ -31,7 +31,7 @@ final class AuthViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init(authenticationManager: AuthenticationManagerImpl, userManager: UserManagerImpl) {
-        self.authManager = authenticationManager
+        authManager = authenticationManager
         self.userManager = userManager
 
         userManager.$isLoading
@@ -50,8 +50,8 @@ final class AuthViewModel: ObservableObject {
 
     func submit() {
         switch mode {
-        case .login:    login()
-        case .signUp:   signUp()
+        case .login: login()
+        case .signUp: signUp()
         }
     }
 
@@ -152,12 +152,12 @@ final class AuthViewModel: ObservableObject {
 // MARK: - Auth-related models
 
 struct AuthResponse: Codable {
-    public let token: String
-    public let username: String
-    public let name: String
+    let token: String
+    let username: String
+    let name: String
 }
 
 struct Credentials: Codable {
-    public var username: String
-    public var password: String
+    var username: String
+    var password: String
 }

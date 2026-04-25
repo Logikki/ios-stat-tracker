@@ -20,7 +20,7 @@ struct AddGameView: View {
                 }
                 .pickerStyle(.segmented)
                 .disabled(viewModel.isLeagueLocked)
-                
+
                 if viewModel.isLeagueLocked {
                     Text("Game type is limited to this league's supported types")
                         .font(.caption)
@@ -86,8 +86,8 @@ struct AddGameView: View {
             }
 
             Section("Score") {
-                Stepper("Home: \(viewModel.homeScore)", value: $viewModel.homeScore, in: 0...50)
-                Stepper("Away: \(viewModel.awayScore)", value: $viewModel.awayScore, in: 0...50)
+                Stepper("Home: \(viewModel.homeScore)", value: $viewModel.homeScore, in: 0 ... 50)
+                Stepper("Away: \(viewModel.awayScore)", value: $viewModel.awayScore, in: 0 ... 50)
             }
 
             Section("Details") {
@@ -150,15 +150,15 @@ struct AddGameView: View {
 }
 
 #if DEBUG
-#Preview("Add game – with friends") {
-    NavigationStack {
-        AddGameView(viewModel: AddGameViewModel.preview())
+    #Preview("Add game – with friends") {
+        NavigationStack {
+            AddGameView(viewModel: AddGameViewModel.preview())
+        }
     }
-}
 
-#Preview("Add game – no friends") {
-    NavigationStack {
-        AddGameView(viewModel: AddGameViewModel.preview(profile: PreviewSamples.userEmpty))
+    #Preview("Add game – no friends") {
+        NavigationStack {
+            AddGameView(viewModel: AddGameViewModel.preview(profile: PreviewSamples.userEmpty))
+        }
     }
-}
 #endif

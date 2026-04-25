@@ -16,7 +16,7 @@ struct CreateLeagueView: View {
             Section("Basics") {
                 TextField("Name", text: $viewModel.name)
                 TextField("Description (optional)", text: $viewModel.description, axis: .vertical)
-                    .lineLimit(2...4)
+                    .lineLimit(2 ... 4)
                 DatePicker("Ends on", selection: $viewModel.duration, displayedComponents: .date)
             }
 
@@ -33,7 +33,7 @@ struct CreateLeagueView: View {
 
             Section {
                 TextField("Comma-separated usernames", text: $viewModel.extraUsernames, axis: .vertical)
-                    .lineLimit(2...4)
+                    .lineLimit(2 ... 4)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
             } header: {
@@ -69,9 +69,9 @@ struct CreateLeagueView: View {
 }
 
 #if DEBUG
-#Preview("Create league") {
-    NavigationStack {
-        CreateLeagueView(viewModel: CreateLeagueViewModel.preview(), onDone: {})
+    #Preview("Create league") {
+        NavigationStack {
+            CreateLeagueView(viewModel: CreateLeagueViewModel.preview(), onDone: {})
+        }
     }
-}
 #endif

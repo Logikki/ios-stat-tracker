@@ -1,5 +1,5 @@
 //
-//  SplashScreenView.swift
+//  LoadingScreen.swift
 //  stat-tracker
 //
 //  Created by Roni Koskinen on 14.6.2025.
@@ -27,7 +27,7 @@ struct LoadingScreen: View {
 }
 
 #if DEBUG
-#Preview("Loading screen") {
-    LoadingScreen()
-}
+    #Preview("Loading screen") {
+        LoadingScreen()
+    }
 #endif

@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct Constants {
-    public struct API {
+public enum Constants {
+    public enum API {
         public static let productionURL = "https://game-stats-tracker-api.fly.dev"
         public static let localSimulatorURL = "http://localhost:3000"
 
@@ -17,12 +17,13 @@ public struct Constants {
         /// Base URL the HTTP client talks to. Reads an optional override from UserDefaults.
         public static var URL: String {
             #if DEBUG
-            return localSimulatorURL
+                return localSimulatorURL
             #else
-            if let override = UserDefaults.standard.string(forKey: baseURLKey),
-               !override.isEmpty {
-                return override.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-            }
+                if let override = UserDefaults.standard.string(forKey: baseURLKey),
+                   !override.isEmpty
+                {
+                    return override.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+                }
             #endif
             // default
             return productionURL
@@ -37,11 +38,11 @@ public struct Constants {
             }
         }
 
-        public struct Auth {
+        public enum Auth {
             public static let login = "/api/login"
         }
 
-        public struct User {
+        public enum User {
             public static let createUser = "/api/user"
             public static let updateUserVisibility = "/api/user/visibility"
             public static let getOwnUser = "/api/user/own"
@@ -49,14 +50,14 @@ public struct Constants {
             public static let getUsers = "/api/users"
         }
 
-        public struct FriendRequest {
+        public enum FriendRequest {
             public static let sendFriendRequest = "/api/user/friend-request/%@"
             public static let acceptFriendRequest = "/api/user/friend-request/accept/%@"
             public static let rejectFriendRequest = "/api/user/friend-request/reject/%@"
             public static let removeFriend = "/api/user/friend/%@"
         }
 
-        public struct League {
+        public enum League {
             public static let createLeague = "/api/league"
             public static let putUserToLeague = "/api/league/user/%@"
             public static let deleteLeague = "/api/league/delete/%@"
@@ -64,14 +65,14 @@ public struct Constants {
             public static let acceptLeagueInvitation = "/api/league/join/%@"
         }
 
-        public struct Game {
+        public enum Game {
             public static let createGame = "/api/game"
             public static let deleteGame = "/api/game/remove/%@"
             public static let getGames = "/api/game"
         }
     }
 
-    public struct UserDefaultsKeys {
+    public enum UserDefaultsKeys {
         public static let authToken = "authToken"
         public static let currentUsername = "username"
         public static let currentName = "name"

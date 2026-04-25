@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 25.4.2026.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class LeagueDetailViewModel: ObservableObject {
@@ -24,7 +24,8 @@ final class LeagueDetailViewModel: ObservableObject {
     init(league: League,
          leagueManager: LeagueManagerImpl,
          userManager: UserManagerImpl,
-         authManager: AuthenticationManagerImpl) {
+         authManager: AuthenticationManagerImpl)
+    {
         self.league = league
         self.leagueManager = leagueManager
         self.userManager = userManager
@@ -47,7 +48,9 @@ final class LeagueDetailViewModel: ObservableObject {
         return league.isAdmin(username: me)
     }
 
-    var sortedMatches: [Game] { league.matches.sorted(by: { $0.createdAt > $1.createdAt }) }
+    var sortedMatches: [Game] {
+        league.matches.sorted(by: { $0.createdAt > $1.createdAt })
+    }
 
     var leaderboard: [LeagueStanding] {
         var standings: [String: LeagueStanding] = [:]
@@ -114,22 +117,22 @@ final class LeagueDetailViewModel: ObservableObject {
 }
 
 #if DEBUG
-extension LeagueDetailViewModel {
-    static func preview(league: League, asAdmin: Bool = true) -> LeagueDetailViewModel {
-        let auth = AuthenticationManagerImpl.shared
-        if asAdmin, let admin = league.admins.first {
-            auth.currentUser = AuthResponse(token: "preview", username: admin.username, name: admin.username)
+    extension LeagueDetailViewModel {
+        static func preview(league: League, asAdmin: Bool = true) -> LeagueDetailViewModel {
+            let auth = AuthenticationManagerImpl.shared
+            if asAdmin, let admin = league.admins.first {
+                auth.currentUser = AuthResponse(token: "preview", username: admin.username, name: admin.username)
+            }
+            let user = UserManagerImpl.preview(profile: PreviewSamples.userWithEverything)
+            let leagueManager = LeagueManagerImpl()
+            return LeagueDetailViewModel(
+                league: league,
+                leagueManager: leagueManager,
+                userManager: user,
+                authManager: auth
+            )
         }
-        let user = UserManagerImpl.preview(profile: PreviewSamples.userWithEverything)
-        let leagueManager = LeagueManagerImpl()
-        return LeagueDetailViewModel(
-            league: league,
-            leagueManager: leagueManager,
-            userManager: user,
-            authManager: auth
-        )
     }
-}
 #endif
 
 struct LeagueStanding: Identifiable, Hashable {
@@ -141,9 +144,17 @@ struct LeagueStanding: Identifiable, Hashable {
     var goalsFor: Int = 0
     var goalsAgainst: Int = 0
 
-    var id: String { username }
-    var points: Int { wins * 3 + draws }
-    var goalDifference: Int { goalsFor - goalsAgainst }
+    var id: String {
+        username
+    }
+
+    var points: Int {
+        wins * 3 + draws
+    }
+
+    var goalDifference: Int {
+        goalsFor - goalsAgainst
+    }
 
     func recording(scoreFor: Int, scoreAgainst: Int) -> LeagueStanding {
         var copy = self

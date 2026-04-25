@@ -26,10 +26,10 @@ final class JoinLeagueViewModel: ObservableObject {
     }
 
     #if DEBUG
-    static func preview() -> JoinLeagueViewModel {
-        let user = UserManagerImpl.preview(profile: PreviewSamples.userEmpty)
-        return JoinLeagueViewModel(leagueManager: LeagueManagerImpl(), userManager: user)
-    }
+        static func preview() -> JoinLeagueViewModel {
+            let user = UserManagerImpl.preview(profile: PreviewSamples.userEmpty)
+            return JoinLeagueViewModel(leagueManager: LeagueManagerImpl(), userManager: user)
+        }
     #endif
 
     func submit(onSuccess: @escaping () -> Void) {

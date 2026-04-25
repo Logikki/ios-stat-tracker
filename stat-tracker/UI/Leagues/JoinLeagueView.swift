@@ -46,9 +46,9 @@ struct JoinLeagueView: View {
 }
 
 #if DEBUG
-#Preview("Join league") {
-    NavigationStack {
-        JoinLeagueView(viewModel: JoinLeagueViewModel.preview(), onDone: {})
+    #Preview("Join league") {
+        NavigationStack {
+            JoinLeagueView(viewModel: JoinLeagueViewModel.preview(), onDone: {})
+        }
     }
-}
 #endif

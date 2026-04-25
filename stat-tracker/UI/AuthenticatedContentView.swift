@@ -62,10 +62,10 @@ struct AuthenticatedContentView: View {
 }
 
 #if DEBUG
-#Preview("Authenticated tabs") {
-    let factory = ViewModeFactoryImpl.preview()
-    return AuthenticatedContentView()
-        .environmentObject(AuthenticationManagerImpl.shared)
-        .environmentObject(factory)
-}
+    #Preview("Authenticated tabs") {
+        let factory = ViewModeFactoryImpl.preview()
+        return AuthenticatedContentView()
+            .environmentObject(AuthenticationManagerImpl.shared)
+            .environmentObject(factory)
+    }
 #endif

@@ -5,8 +5,8 @@
 //  Created by Roni Koskinen on 28.1.2025.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class UserManagerImpl: ObservableObject {
@@ -46,13 +46,13 @@ final class UserManagerImpl: ObservableObject {
     func fetchOwnUser() async {
         // Cancel any existing fetch task to prevent race conditions
         fetchTask?.cancel()
-        
+
         // Don't allow multiple simultaneous loads
-        guard !isLoading else { 
+        guard !isLoading else {
             AppLogger.info("Fetch already in progress, skipping duplicate call", category: "UserManagement")
-            return 
+            return
         }
-        
+
         fetchTask = Task { @MainActor in
             isLoading = true
             errorMessage = nil
@@ -66,12 +66,12 @@ final class UserManagerImpl: ObservableObject {
             let resource = Resource(url: url, method: .get([]), modelType: User.self)
             do {
                 let user = try await HTTPClient.shared.load(resource)
-                
+
                 guard !Task.isCancelled else {
                     AppLogger.info("Fetch task was cancelled", category: "UserManagement")
                     return
                 }
-                
+
                 self.currentUserProfile = user
                 AppLogger.info("Loaded own user \(user.username)", category: "UserManagement")
             } catch is CancellationError {
@@ -87,7 +87,7 @@ final class UserManagerImpl: ObservableObject {
                 }
             }
         }
-        
+
         await fetchTask?.value
     }
 
@@ -164,12 +164,12 @@ final class UserManagerImpl: ObservableObject {
 }
 
 #if DEBUG
-extension UserManagerImpl {
-    @MainActor
-    static func preview(profile: User?) -> UserManagerImpl {
-        let manager = UserManagerImpl(authenticationManager: AuthenticationManagerImpl.shared)
-        manager.currentUserProfile = profile
-        return manager
+    extension UserManagerImpl {
+        @MainActor
+        static func preview(profile: User?) -> UserManagerImpl {
+            let manager = UserManagerImpl(authenticationManager: AuthenticationManagerImpl.shared)
+            manager.currentUserProfile = profile
+            return manager
+        }
     }
-}
 #endif

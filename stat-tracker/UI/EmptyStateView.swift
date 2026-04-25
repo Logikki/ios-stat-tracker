@@ -63,29 +63,29 @@ struct InlineEmptyState: View {
 }
 
 #if DEBUG
-#Preview("Empty – with action") {
-    EmptyStateView(
-        icon: "person.3.sequence",
-        title: "No leagues yet",
-        message: "Create one or join with an invite code.",
-        actionTitle: "Create league",
-        action: {}
-    )
-}
+    #Preview("Empty – with action") {
+        EmptyStateView(
+            icon: "person.3.sequence",
+            title: "No leagues yet",
+            message: "Create one or join with an invite code.",
+            actionTitle: "Create league",
+            action: {}
+        )
+    }
 
-#Preview("Empty – simple") {
-    EmptyStateView(
-        icon: "sportscourt",
-        title: "No games yet",
-        message: "Tap the Add tab to record your first match."
-    )
-}
+    #Preview("Empty – simple") {
+        EmptyStateView(
+            icon: "sportscourt",
+            title: "No games yet",
+            message: "Tap the Add tab to record your first match."
+        )
+    }
 
-#Preview("Inline empty") {
-    Form {
-        Section("Friends") {
-            InlineEmptyState(icon: "person.2.slash", text: "You don't have any friends yet.")
+    #Preview("Inline empty") {
+        Form {
+            Section("Friends") {
+                InlineEmptyState(icon: "person.2.slash", text: "You don't have any friends yet.")
+            }
         }
     }
-}
 #endif

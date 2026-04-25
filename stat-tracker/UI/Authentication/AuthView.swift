@@ -71,8 +71,8 @@ struct AuthView: View {
 
                     Button(action: viewModel.toggleMode) {
                         Text(viewModel.mode == .login
-                             ? "Don't have an account? Sign up"
-                             : "Already have an account? Log in")
+                            ? "Don't have an account? Sign up"
+                            : "Already have an account? Log in")
                             .font(.footnote)
                     }
                 }
@@ -97,18 +97,18 @@ struct AuthView: View {
 }
 
 #if DEBUG
-#Preview("Login") {
-    let auth = AuthenticationManagerImpl.shared
-    let user = UserManagerImpl(authenticationManager: auth)
-    let vm = AuthViewModel(authenticationManager: auth, userManager: user)
-    return AuthView(viewModel: vm)
-}
+    #Preview("Login") {
+        let auth = AuthenticationManagerImpl.shared
+        let user = UserManagerImpl(authenticationManager: auth)
+        let vm = AuthViewModel(authenticationManager: auth, userManager: user)
+        return AuthView(viewModel: vm)
+    }
 
-#Preview("Sign up") {
-    let auth = AuthenticationManagerImpl.shared
-    let user = UserManagerImpl(authenticationManager: auth)
-    let vm = AuthViewModel(authenticationManager: auth, userManager: user)
-    vm.mode = .signUp
-    return AuthView(viewModel: vm)
-}
+    #Preview("Sign up") {
+        let auth = AuthenticationManagerImpl.shared
+        let user = UserManagerImpl(authenticationManager: auth)
+        let vm = AuthViewModel(authenticationManager: auth, userManager: user)
+        vm.mode = .signUp
+        return AuthView(viewModel: vm)
+    }
 #endif

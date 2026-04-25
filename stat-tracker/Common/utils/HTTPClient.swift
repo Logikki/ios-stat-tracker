@@ -21,33 +21,33 @@ enum NetworkError: Error {
 extension NetworkError: LocalizedError {
     var errorDescription: String? {
         switch self {
-            case .badRequest:
-                return "The server couldn't process that request."
-            case .serverError(let errorMessage):
-                return errorMessage
-            case .decodingError:
-                return "We couldn't read the server's response."
-            case .invalidResponse:
-                return "The server sent back an empty or invalid response."
-            case .invalidURL:
-                return "The request URL is invalid. Check the backend URL in Settings."
-            case .offline:
-                return "Can't reach the server. Check your connection or the backend URL in Settings."
-            case .httpError(let statusCode, let body):
-                if let body, !body.isEmpty {
-                    return body
-                }
-                switch statusCode {
-                case 400: return "Some required information is missing or invalid."
-                case 403: return "You don't have permission to do that."
-                case 404: return "Not found."
-                case 409: return "Conflict – that action collides with existing data."
-                case 500..<600: return "The server ran into a problem (\(statusCode))."
-                default:  return "Request failed with status \(statusCode)."
-                }
-            case .unauthorized(let body):
-                if let body, !body.isEmpty { return body }
-                return "Your session has expired. Please log in again."
+        case .badRequest:
+            return "The server couldn't process that request."
+        case let .serverError(errorMessage):
+            return errorMessage
+        case .decodingError:
+            return "We couldn't read the server's response."
+        case .invalidResponse:
+            return "The server sent back an empty or invalid response."
+        case .invalidURL:
+            return "The request URL is invalid. Check the backend URL in Settings."
+        case .offline:
+            return "Can't reach the server. Check your connection or the backend URL in Settings."
+        case let .httpError(statusCode, body):
+            if let body, !body.isEmpty {
+                return body
+            }
+            switch statusCode {
+            case 400: return "Some required information is missing or invalid."
+            case 403: return "You don't have permission to do that."
+            case 404: return "Not found."
+            case 409: return "Conflict – that action collides with existing data."
+            case 500 ..< 600: return "The server ran into a problem (\(statusCode))."
+            default: return "Request failed with status \(statusCode)."
+            }
+        case let .unauthorized(body):
+            if let body, !body.isEmpty { return body }
+            return "Your session has expired. Please log in again."
         }
     }
 }
@@ -63,12 +63,14 @@ private struct ServerErrorBody: Decodable {
 
 private func extractServerMessage(from data: Data) -> String? {
     if let parsed = try? JSONDecoder().decode(ServerErrorBody.self, from: data),
-       let text = parsed.text {
+       let text = parsed.text
+    {
         return text
     }
     if let raw = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
        !raw.isEmpty,
-       raw.count < 240 {
+       raw.count < 240
+    {
         return raw
     }
     return nil
@@ -81,9 +83,9 @@ enum HTTPMethod {
 
     var name: String {
         switch self {
-            case .get: return "GET"
-            case .post: return "POST"
-            case .delete: return "DELETE"
+        case .get: return "GET"
+        case .post: return "POST"
+        case .delete: return "DELETE"
         }
     }
 }
@@ -98,13 +100,12 @@ struct Resource<T: Decodable> {
 public struct EmptyResponse: Decodable {}
 
 struct HTTPClient {
-
     static let shared = HTTPClient()
     private let session: URLSession
 
     private init() {
         let configuration = URLSessionConfiguration.default
-        self.session = URLSession(configuration: configuration)
+        session = URLSession(configuration: configuration)
     }
 
     func load<T: Decodable>(_ resource: Resource<T>) async throws -> T {
@@ -116,21 +117,21 @@ struct HTTPClient {
         }
 
         switch resource.method {
-            case .get(let queryItems):
-                if !queryItems.isEmpty {
-                    var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
-                    components?.queryItems = queryItems
-                    guard let finalURL = components?.url else {
-                        throw NetworkError.invalidURL
-                    }
-                    request.url = finalURL
+        case let .get(queryItems):
+            if !queryItems.isEmpty {
+                var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+                components?.queryItems = queryItems
+                guard let finalURL = components?.url else {
+                    throw NetworkError.invalidURL
                 }
+                request.url = finalURL
+            }
 
-            case .post(let data):
-                request.httpBody = data
+        case let .post(data):
+            request.httpBody = data
 
-            case .delete:
-                break
+        case .delete:
+            break
         }
 
         let data: Data
@@ -162,7 +163,7 @@ struct HTTPClient {
             throw NetworkError.unauthorized(serverMessage)
         }
 
-        guard (200..<300).contains(httpResponse.statusCode) else {
+        guard (200 ..< 300).contains(httpResponse.statusCode) else {
             let serverMessage = extractServerMessage(from: data)
             throw NetworkError.httpError(httpResponse.statusCode, serverMessage)
         }
@@ -184,13 +185,13 @@ struct HTTPClient {
         } catch {
             if let decodingError = error as? DecodingError {
                 switch decodingError {
-                case .dataCorrupted(let context):
+                case let .dataCorrupted(context):
                     AppLogger.error("Decoding – data corrupted: \(context.debugDescription) (path: \(context.codingPath))", category: "Decoding")
-                case .keyNotFound(let key, let context):
+                case let .keyNotFound(key, context):
                     AppLogger.error("Decoding – key '\(key.stringValue)' missing: \(context.debugDescription) (path: \(context.codingPath))", category: "Decoding")
-                case .valueNotFound(let type, let context):
+                case let .valueNotFound(type, context):
                     AppLogger.error("Decoding – value of '\(type)' missing: \(context.debugDescription) (path: \(context.codingPath))", category: "Decoding")
-                case .typeMismatch(let type, let context):
+                case let .typeMismatch(type, context):
                     AppLogger.error("Decoding – type mismatch '\(type)': \(context.debugDescription) (path: \(context.codingPath))", category: "Decoding")
                 @unknown default:
                     AppLogger.error("Decoding – unknown: \(error.localizedDescription)", category: "Decoding")
@@ -215,7 +216,8 @@ public protocol URLSessionDataTaskProtocol {
 
 extension URLSession: URLSessionProtocol {
     public func dataTask(with request: URLRequest,
-                             completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTaskProtocol {
+                         completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTaskProtocol
+    {
         return (dataTask(with: request, completionHandler: completionHandler) as URLSessionDataTask) as URLSessionDataTaskProtocol
     }
 

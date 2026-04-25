@@ -38,6 +38,8 @@ enum NHLTeam: String, CaseIterable, Identifiable, Codable {
     case vegasGoldenKnights = "Vegas Golden Knights"
     case washingtonCapitals = "Washington Capitals"
     case winnipegJets = "Winnipeg Jets"
-    
-    var id: Self { self }
+
+    var id: Self {
+        self
+    }
 }

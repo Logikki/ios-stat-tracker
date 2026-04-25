@@ -81,7 +81,7 @@ struct SettingsView: View {
             set: { newValue in
                 switch newValue {
                 case .production: viewModel.useProduction()
-                case .local:      viewModel.useLocal()
+                case .local: viewModel.useLocal()
                 case .custom:
                     // Stay on whatever URL is active; user will edit the field next.
                     break
@@ -92,7 +92,7 @@ struct SettingsView: View {
 }
 
 #if DEBUG
-#Preview("Settings") {
-    SettingsView(viewModel: SettingsViewModel(authenticationManager: AuthenticationManagerImpl.shared))
-}
+    #Preview("Settings") {
+        SettingsView(viewModel: SettingsViewModel(authenticationManager: AuthenticationManagerImpl.shared))
+    }
 #endif

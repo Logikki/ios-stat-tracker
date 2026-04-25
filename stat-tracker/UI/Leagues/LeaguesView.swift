@@ -46,8 +46,8 @@ struct LeaguesView: View {
                 }
             }
         }
-        .refreshable { 
-            await viewModel.refresh() 
+        .refreshable {
+            await viewModel.refresh()
         }
         .navigationDestination(for: League.self) { league in
             LeagueDetailView(viewModel: appFactory.createLeagueDetailViewModel(league: league))
@@ -79,26 +79,26 @@ struct LeaguesView: View {
 }
 
 #if DEBUG
-#Preview("Leagues – list") {
-    NavigationStack {
-        LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userWithEverything))
-            .environmentObject(ViewModeFactoryImpl.preview())
+    #Preview("Leagues – list") {
+        NavigationStack {
+            LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userWithEverything))
+                .environmentObject(ViewModeFactoryImpl.preview())
+        }
     }
-}
 
-#Preview("Leagues – empty") {
-    NavigationStack {
-        LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userEmpty))
-            .environmentObject(ViewModeFactoryImpl.preview(profile: PreviewSamples.userEmpty))
+    #Preview("Leagues – empty") {
+        NavigationStack {
+            LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userEmpty))
+                .environmentObject(ViewModeFactoryImpl.preview(profile: PreviewSamples.userEmpty))
+        }
     }
-}
 
-#Preview("League row") {
-    List {
-        LeagueRowView(league: PreviewSamples.leagueWithMatches)
-        LeagueRowView(league: PreviewSamples.leagueEmpty)
+    #Preview("League row") {
+        List {
+            LeagueRowView(league: PreviewSamples.leagueWithMatches)
+            LeagueRowView(league: PreviewSamples.leagueEmpty)
+        }
     }
-}
 #endif
 
 struct LeagueRowView: View {
