@@ -23,7 +23,6 @@ final class DependencyContainer: ObservableObject {
     let gameManager: GameManagerImpl
     let leagueManager: LeagueManagerImpl
     let teamsManager: TeamsManager
-    let persistenceController: PersistenceController
     
     // MARK: - App State
     
@@ -48,7 +47,6 @@ final class DependencyContainer: ObservableObject {
     private init() {
         // Initialize core services in dependency order
         self.authenticationManager = AuthenticationManagerImpl.shared
-        self.persistenceController = PersistenceController.shared
         self.userManager = UserManagerImpl(authenticationManager: authenticationManager)
         self.gameManager = GameManagerImpl()
         self.leagueManager = LeagueManagerImpl()

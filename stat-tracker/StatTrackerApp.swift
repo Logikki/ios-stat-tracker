@@ -25,12 +25,10 @@ struct Stat_trackerApp: App {
                     AuthView(viewModel: dependencies.getAuthViewModel())
                 } else {
                     AuthenticatedContentView()
-                        .environment(\.managedObjectContext, dependencies.persistenceController.container.viewContext)
                 }
             }
             .environmentObject(dependencies)
             .environmentObject(appState)
-            .environment(\.managedObjectContext, dependencies.persistenceController.container.viewContext)
             .alert(
                 "Error",
                 isPresented: Binding<Bool>(

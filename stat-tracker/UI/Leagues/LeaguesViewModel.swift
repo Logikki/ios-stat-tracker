@@ -23,11 +23,6 @@ final class LeaguesViewModel: ObservableObject {
         // Observe user profile changes and update leagues
         userManager.$currentUserProfile
             .map { $0?.leagues ?? [] }
-//            .removeDuplicates(by: { oldLeagues, newLeagues in
-//                // Only update if leagues actually changed
-//                oldLeagues.count == newLeagues.count &&
-//                oldLeagues.map { $0.id }.sorted() == newLeagues.map { $0.id }.sorted()
-//            })
             .receive(on: DispatchQueue.main)
             .sink { [weak self] newLeagues in
                 self?.leagues = newLeagues
@@ -36,7 +31,6 @@ final class LeaguesViewModel: ObservableObject {
     }
 
     func refresh() async {
-        // Cancel any existing refresh to prevent duplicate calls
         refreshTask?.cancel()
 
         refreshTask = Task {

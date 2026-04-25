@@ -51,7 +51,6 @@ class AppState: ObservableObject {
         }
         .store(in: &cancellables)
 
-        // Handle error messages
         userManager.$errorMessage
             .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
             .sink { [weak self] errorMessage in
