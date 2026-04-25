@@ -22,9 +22,7 @@ final class GamesViewModel: ObservableObject {
         self.gameManager = gameManager
         self.userManager = userManager
 
-        // Prefer the user's own matches when available; fall back to global feed.
         userManager.$currentUserProfile
-            .dropFirst()
             .map { $0?.matches ?? [] }
             .map { $0.sorted(by: { $0.createdAt > $1.createdAt }) }
             .receive(on: DispatchQueue.main)
