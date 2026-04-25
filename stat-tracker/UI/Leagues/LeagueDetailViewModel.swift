@@ -14,6 +14,7 @@ final class LeagueDetailViewModel: ObservableObject {
     @Published var newMemberUsername: String = ""
     @Published var generatedInvitationCode: String?
     @Published var errorMessage: String?
+    @Published var currentUserName: String
     @Published private(set) var isWorking: Bool = false
 
     private let leagueManager: LeagueManagerImpl
@@ -36,6 +37,9 @@ final class LeagueDetailViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self else { return }
+                
+                currentUserName = profile?.username
+                
                 if let updated = profile?.leagues.first(where: { $0.id == league.id }) {
                     self.league = updated
                 }

@@ -22,13 +22,14 @@ final class UserManagerImpl: ObservableObject {
         self.authenticationManager = authenticationManager
         AppLogger.info("UserManager initialized.", category: "UserManagement")
 
-        // Observe auth changes but debounce to prevent multiple rapid calls
         authenticationManager.$isAuthenticated
             .removeDuplicates()
             .sink { [weak self] isAuthenticated in
                 guard let self else { return }
+                
                 Task { @MainActor [weak self] in
                     guard let self else { return }
+                    
                     if isAuthenticated {
                         await self.fetchOwnUser()
                     } else {
@@ -44,10 +45,8 @@ final class UserManagerImpl: ObservableObject {
     // MARK: - Networking
 
     func fetchOwnUser() async {
-        // Cancel any existing fetch task to prevent race conditions
         fetchTask?.cancel()
 
-        // Don't allow multiple simultaneous loads
         guard !isLoading else {
             AppLogger.info("Fetch already in progress, skipping duplicate call", category: "UserManagement")
             return
