@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LeaguesView: View {
     @ObservedObject var viewModel: LeaguesViewModel
-    @EnvironmentObject var appFactory: ViewModeFactoryImpl
+    @EnvironmentObject var dependencies: DependencyContainer
 
     @State private var showCreate = false
     @State private var showJoin = false
@@ -50,17 +50,17 @@ struct LeaguesView: View {
             await viewModel.refresh()
         }
         .navigationDestination(for: League.self) { league in
-            LeagueDetailView(viewModel: appFactory.createLeagueDetailViewModel(league: league))
+            LeagueDetailView(viewModel: dependencies.createLeagueDetailViewModel(league: league))
         }
         .sheet(isPresented: $showCreate) {
             NavigationStack {
-                CreateLeagueView(viewModel: appFactory.createCreateLeagueViewModel(),
+                CreateLeagueView(viewModel: dependencies.createCreateLeagueViewModel(),
                                  onDone: { showCreate = false })
             }
         }
         .sheet(isPresented: $showJoin) {
             NavigationStack {
-                JoinLeagueView(viewModel: appFactory.createJoinLeagueViewModel(),
+                JoinLeagueView(viewModel: dependencies.createJoinLeagueViewModel(),
                                onDone: { showJoin = false })
             }
         }
@@ -82,14 +82,12 @@ struct LeaguesView: View {
     #Preview("Leagues – list") {
         NavigationStack {
             LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userWithEverything))
-                .environmentObject(ViewModeFactoryImpl.preview())
         }
     }
 
     #Preview("Leagues – empty") {
         NavigationStack {
             LeaguesView(viewModel: LeaguesViewModel.preview(profile: PreviewSamples.userEmpty))
-                .environmentObject(ViewModeFactoryImpl.preview(profile: PreviewSamples.userEmpty))
         }
     }
 

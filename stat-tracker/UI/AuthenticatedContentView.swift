@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct AuthenticatedContentView: View {
-    @EnvironmentObject var authenticationManager: AuthenticationManagerImpl
-    @EnvironmentObject var appFactory: ViewModeFactoryImpl
+    @EnvironmentObject var dependencies: DependencyContainer
 
     @State private var showSettings = false
     @AppStorage("isDarkMode") private var isDarkMode = true
@@ -17,26 +16,25 @@ struct AuthenticatedContentView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                GamesView(viewModel: appFactory.createGamesViewModel())
+                GamesView(viewModel: dependencies.getGamesViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Games", systemImage: "list.bullet.rectangle") }
 
             NavigationStack {
-                AddGameView(viewModel: appFactory.createAddGameViewModel())
+                AddGameView(viewModel: dependencies.createAddGameViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Add", systemImage: "plus.circle.fill") }
 
             NavigationStack {
-                LeaguesView(viewModel: appFactory.createLeaguesViewModel())
-                    .environmentObject(appFactory)
+                LeaguesView(viewModel: dependencies.getLeaguesViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Leagues", systemImage: "trophy") }
 
             NavigationStack {
-                ProfileView(viewModel: appFactory.createProfileViewModel())
+                ProfileView(viewModel: dependencies.getProfileViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
@@ -44,8 +42,8 @@ struct AuthenticatedContentView: View {
         .tint(.blue)
         .preferredColorScheme(isDarkMode ? .dark : .light)
         .sheet(isPresented: $showSettings) {
-            SettingsView(viewModel: appFactory.createSettingsViewModel())
-                .environmentObject(authenticationManager)
+            SettingsView(viewModel: dependencies.getSettingsViewModel())
+                .environmentObject(dependencies.authenticationManager)
         }
     }
 
@@ -63,9 +61,7 @@ struct AuthenticatedContentView: View {
 
 #if DEBUG
     #Preview("Authenticated tabs") {
-        let factory = ViewModeFactoryImpl.preview()
         return AuthenticatedContentView()
             .environmentObject(AuthenticationManagerImpl.shared)
-            .environmentObject(factory)
     }
 #endif

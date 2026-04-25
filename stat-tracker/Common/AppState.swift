@@ -26,7 +26,13 @@ class AppState: ObservableObject {
     }
 
     private func setup() {
-        // Combine auth and loading states with debouncing to prevent rapid updates
+        self.showAuthView = !authManager.isAuthenticated
+        if authManager.isAuthenticated {
+            self.isLoadingInitialData = userManager.isLoading
+        } else {
+            self.isLoadingInitialData = false
+        }
+        
         Publishers.CombineLatest(
             authManager.$isAuthenticated,
             userManager.$isLoading
@@ -34,7 +40,7 @@ class AppState: ObservableObject {
         .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
         .sink { [weak self] isAuthenticated, userManagerIsLoading in
             guard let self else { return }
-
+            
             self.showAuthView = !isAuthenticated
 
             if isAuthenticated {

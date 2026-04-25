@@ -9,36 +9,11 @@ import SwiftUI
 
 @main
 struct Stat_trackerApp: App {
-    let persistenceController = PersistenceController.shared
-
-    @StateObject var appState: AppState
-
-    @StateObject var authenticationManager: AuthenticationManagerImpl
-    @StateObject var userManager: UserManagerImpl
-    @StateObject var gameManager: GameManagerImpl
-    @StateObject var leagueManager: LeagueManagerImpl
-    @StateObject var appFactory: ViewModeFactoryImpl
-
+    private let dependencies = DependencyContainer.shared
+    @StateObject private var appState: AppState
+    
     init() {
-        let authManager = AuthenticationManagerImpl.shared
-        let userManager = UserManagerImpl(authenticationManager: authManager)
-        let gameManager = GameManagerImpl()
-        let leagueManager = LeagueManagerImpl()
-
-        let factoryInstance = ViewModeFactoryImpl(
-            authManager: authManager,
-            userManager: userManager,
-            gameManager: gameManager,
-            leagueManager: leagueManager
-        )
-        let appStateInstance = AppState(authManager: authManager, userManager: userManager)
-
-        _authenticationManager = StateObject(wrappedValue: authManager)
-        _userManager = StateObject(wrappedValue: userManager)
-        _gameManager = StateObject(wrappedValue: gameManager)
-        _leagueManager = StateObject(wrappedValue: leagueManager)
-        _appFactory = StateObject(wrappedValue: factoryInstance)
-        _appState = StateObject(wrappedValue: appStateInstance)
+        _appState = StateObject(wrappedValue: DependencyContainer.shared.appState)
     }
 
     var body: some Scene {
@@ -47,25 +22,15 @@ struct Stat_trackerApp: App {
                 if appState.isLoadingInitialData {
                     LoadingScreen()
                 } else if appState.showAuthView {
-                    AuthView(viewModel: appFactory.createAuthViewModel())
-                        .environmentObject(authenticationManager)
+                    AuthView(viewModel: dependencies.getAuthViewModel())
                 } else {
                     AuthenticatedContentView()
-                        .environmentObject(authenticationManager)
-                        .environmentObject(userManager)
-                        .environmentObject(gameManager)
-                        .environmentObject(leagueManager)
-                        .environmentObject(appFactory)
-                        .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                        .environment(\.managedObjectContext, dependencies.persistenceController.container.viewContext)
                 }
             }
-            .environmentObject(authenticationManager)
-            .environmentObject(userManager)
-            .environmentObject(gameManager)
-            .environmentObject(leagueManager)
-            .environmentObject(appFactory)
+            .environmentObject(dependencies)
             .environmentObject(appState)
-            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            .environment(\.managedObjectContext, dependencies.persistenceController.container.viewContext)
             .alert(
                 "Error",
                 isPresented: Binding<Bool>(

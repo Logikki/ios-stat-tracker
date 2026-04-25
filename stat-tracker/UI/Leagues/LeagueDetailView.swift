@@ -10,7 +10,7 @@ import SwiftUI
 struct LeagueDetailView: View {
     @ObservedObject var viewModel: LeagueDetailViewModel
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var appFactory: ViewModeFactoryImpl
+    @EnvironmentObject var dependencies: DependencyContainer
 
     @State private var showInvitationSheet = false
     @State private var showAddGame = false
@@ -27,9 +27,6 @@ struct LeagueDetailView: View {
                 adminSection
             }
         }
-        .navigationDestination(for: Game.self) { game in
-            GameDetailView(game: game, currentUsername: viewModel.currentUserName)
-        }
         .navigationTitle(viewModel.league.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -43,7 +40,7 @@ struct LeagueDetailView: View {
         }
         .sheet(isPresented: $showAddGame) {
             NavigationStack {
-                AddGameView(viewModel: appFactory.createAddGameViewModel(forLeague: viewModel.league))
+                AddGameView(viewModel: dependencies.createAddGameViewModel(forLeague: viewModel.league))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
@@ -143,6 +140,9 @@ struct LeagueDetailView: View {
                     }
                 }
             }
+        }
+        .navigationDestination(for: Game.self) { game in
+            GameDetailView(game: game, currentUsername: viewModel.currentUserName)
         }
     }
 
