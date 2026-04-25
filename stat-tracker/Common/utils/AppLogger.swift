@@ -48,3 +48,13 @@ public enum AppLogger {
         os_log("%{public}@", log: logger, type: type, message)
     }
 }
+
+protocol Loggable {
+    var tag: String { get }
+}
+
+extension Loggable {
+    var tag: String {
+        String(describing: type(of: self))
+    }
+}

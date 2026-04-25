@@ -27,6 +27,11 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
     private let authManager: AuthenticationManagerImpl
     private let gameManager: GameManagerImpl
     private let leagueManager: LeagueManagerImpl
+    
+    // Cache the AuthViewModel to preserve its state
+    private lazy var authViewModel: AuthViewModel = {
+        AuthViewModel(authenticationManager: authManager, userManager: userManager)
+    }()
 
     init(
         teamsManager: TeamsManager = TeamsManagerImpl(),
@@ -43,7 +48,7 @@ final class ViewModeFactoryImpl: ObservableObject, ViewModelFactory {
     }
 
     func createAuthViewModel() -> AuthViewModel {
-        AuthViewModel(authenticationManager: authManager, userManager: userManager)
+        authViewModel
     }
 
     func createSettingsViewModel() -> SettingsViewModel {

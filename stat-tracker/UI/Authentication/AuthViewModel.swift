@@ -14,7 +14,7 @@ enum AuthMode: Hashable {
 }
 
 @MainActor
-final class AuthViewModel: ObservableObject {
+final class AuthViewModel: ObservableObject, Loggable {
     @Published var mode: AuthMode = .login
 
     @Published var username: String = ""
@@ -83,17 +83,20 @@ final class AuthViewModel: ObservableObject {
 
         let resource = Resource(url: url, method: .post(body), modelType: AuthResponse.self)
 
-        Task {
-            defer { self.overallLoading = false }
+        Task { @MainActor in
+            defer { 
+                self.overallLoading = false
+            }
             do {
                 let response = try await HTTPClient.shared.load(resource)
                 self.authManager.setAuthState(response: response)
                 await self.userManager.fetchOwnUser()
                 self.errorMessage = nil
             } catch {
+                let message = friendlyMessage(for: error, fallback: "Login failed.")
+                self.errorMessage = message
                 self.authManager.clearAuthState()
-                self.errorMessage = friendlyMessage(for: error, fallback: "Login failed.")
-                AppLogger.error("Login failed: \(error.localizedDescription)", category: "Authentication")
+                AppLogger.error("\(self.tag)::Login failed: \(error.localizedDescription), message='\(message)'", category: "Authentication")
             }
         }
     }
@@ -143,7 +146,7 @@ final class AuthViewModel: ObservableObject {
 
     private func friendlyMessage(for error: Error, fallback: String) -> String {
         if let networkError = error as? NetworkError {
-            return networkError.localizedDescription
+            return networkError.errorDescription ?? fallback
         }
         return error.localizedDescription.isEmpty ? fallback : error.localizedDescription
     }

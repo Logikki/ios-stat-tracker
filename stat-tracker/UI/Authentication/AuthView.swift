@@ -104,6 +104,14 @@ struct AuthView: View {
         return AuthView(viewModel: vm)
     }
 
+    #Preview("Login error") {
+        let auth = AuthenticationManagerImpl.shared
+        let user = UserManagerImpl(authenticationManager: auth)
+        let vm = AuthViewModel(authenticationManager: auth, userManager: user)
+        vm.errorMessage = "Invalid credentials"
+        return AuthView(viewModel: vm)
+    }
+
     #Preview("Sign up") {
         let auth = AuthenticationManagerImpl.shared
         let user = UserManagerImpl(authenticationManager: auth)

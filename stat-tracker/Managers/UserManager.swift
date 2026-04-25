@@ -26,10 +26,10 @@ final class UserManagerImpl: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] isAuthenticated in
                 guard let self else { return }
-                
+
                 Task { @MainActor [weak self] in
                     guard let self else { return }
-                    
+
                     if isAuthenticated {
                         await self.fetchOwnUser()
                     } else {
@@ -79,7 +79,6 @@ final class UserManagerImpl: ObservableObject {
                 authenticationManager.clearAuthState()
                 errorMessage = "Session expired. Please log in again."
             } catch {
-                // Don't report cancellation errors
                 if (error as NSError).code != NSURLErrorCancelled {
                     errorMessage = error.localizedDescription
                     AppLogger.error("fetchOwnUser failed: \(error.localizedDescription)", category: "UserManagement")

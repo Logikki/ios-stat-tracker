@@ -27,6 +27,9 @@ struct LeagueDetailView: View {
                 adminSection
             }
         }
+        .navigationDestination(for: Game.self) { game in
+            GameDetailView(game: game, currentUsername: viewModel.currentUserName)
+        }
         .navigationTitle(viewModel.league.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -140,9 +143,6 @@ struct LeagueDetailView: View {
                     }
                 }
             }
-        }
-        .navigationDestination(for: Game.self) { game in
-            GameDetailView(game: game, currentUsername: nil)
         }
     }
 
