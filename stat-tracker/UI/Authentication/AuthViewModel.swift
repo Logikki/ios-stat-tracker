@@ -90,12 +90,10 @@ final class AuthViewModel: ObservableObject, Loggable {
             do {
                 let response = try await HTTPClient.shared.load(resource)
                 self.authManager.setAuthState(response: response)
-                await self.userManager.fetchOwnUser()
                 self.errorMessage = nil
             } catch {
                 let message = friendlyMessage(for: error, fallback: "Login failed.")
                 self.errorMessage = message
-                self.authManager.clearAuthState()
                 AppLogger.error("\(self.tag)::Login failed: \(error.localizedDescription), message='\(message)'", category: "Authentication")
             }
         }

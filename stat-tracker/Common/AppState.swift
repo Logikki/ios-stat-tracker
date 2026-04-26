@@ -37,7 +37,7 @@ class AppState: ObservableObject {
             authManager.$isAuthenticated,
             userManager.$isLoading
         )
-        .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+//        .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
         .sink { [weak self] isAuthenticated, userManagerIsLoading in
             guard let self else { return }
 
@@ -52,7 +52,8 @@ class AppState: ObservableObject {
         .store(in: &cancellables)
 
         userManager.$errorMessage
-            .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+            .receive(on: DispatchQueue.main)
+            .compactMap { $0 }
             .sink { [weak self] errorMessage in
                 guard let self else { return }
                 self.errorMessage = errorMessage
