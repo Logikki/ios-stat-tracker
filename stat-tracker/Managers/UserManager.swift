@@ -44,6 +44,7 @@ final class UserManagerImpl: ObservableObject {
 
     // MARK: - Networking
 
+    // TODO: Do not update whole app when realoaded
     func fetchOwnUser() async {
         fetchTask?.cancel()
 
