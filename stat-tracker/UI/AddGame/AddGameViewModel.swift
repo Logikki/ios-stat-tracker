@@ -226,6 +226,7 @@ final class AddGameViewModel: ObservableObject {
 
         isSubmitting = true
         errorMessage = nil
+        leagueNotFoundAlert = false
 
         let payload = CreateGamePayload(
             homeTeam: homeTeam,
@@ -243,22 +244,24 @@ final class AddGameViewModel: ObservableObject {
 
         Task {
             defer { self.isSubmitting = false }
-            do {
-                _ = try await gameManager.createGame(payload)
+            
+            let result = await gameManager.createGameWithErrorHandling(payload)
+            
+            switch result {
+            case .success:
+                // Refresh data in the background
                 await userManager.fetchOwnUser(showLoadingIndicator: false)
                 await gameManager.fetchGames()
+                
+                // Notify success
                 self.didSubmitSuccessfully = true
                 self.reset()
-            } catch let networkError as NetworkError {
-                if case .httpError(404, _) = networkError, selectedLeagueId != nil {
-                    self.leagueNotFoundAlert = true
-                } else {
-                    self.errorMessage = networkError.localizedDescription
-                }
-                AppLogger.error("createGame failed: \(networkError.localizedDescription)", category: "Games")
-            } catch {
-                self.errorMessage = error.localizedDescription
-                AppLogger.error("createGame failed: \(error.localizedDescription)", category: "Games")
+                
+            case .leagueNotFound:
+                self.leagueNotFoundAlert = true
+                
+            case .error(let message):
+                self.errorMessage = message
             }
         }
     }

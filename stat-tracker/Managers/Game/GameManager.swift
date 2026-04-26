@@ -7,29 +7,9 @@
 
 import Foundation
 
-// Skips individual array elements that fail to decode (e.g. games with deleted/null players).
-private struct LossyArray<T: Decodable>: Decodable {
-    let elements: [T]
-
-    private struct Wrapper: Decodable {
-        let value: T?
-        init(from decoder: Decoder) throws { value = try? T(from: decoder) }
-    }
-
-    init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        var elements: [T] = []
-        while !container.isAtEnd {
-            if let value = try container.decode(Wrapper.self).value {
-                elements.append(value)
-            }
-        }
-        self.elements = elements
-    }
-}
-
 @MainActor
 final class GameManagerImpl: ObservableObject {
+
     @Published private(set) var games: [Game] = []
     @Published private(set) var isLoading: Bool = false
     @Published var errorMessage: String? = nil
@@ -82,7 +62,45 @@ final class GameManagerImpl: ObservableObject {
         await fetchTask?.value
     }
 
-    func createGame(_ payload: CreateGamePayload) async throws -> Game {
+    /// Create a game with comprehensive error handling
+    /// - Parameter payload: The game data to create
+    /// - Returns: A result indicating success or the specific type of failure
+    func createGameWithErrorHandling(_ payload: CreateGamePayload) async -> CreateGameResult {
+        do {
+            let game = try await createGame(payload)
+            AppLogger.info("Game created successfully: \(game.id)", category: "Games")
+            return .success(game)
+        } catch let networkError as NetworkError {
+            // Handle specific network errors
+            if case .httpError(404, _) = networkError, payload.league != nil {
+                AppLogger.error("League not found when creating game", category: "Games")
+                return .leagueNotFound
+            } else {
+                let message = networkError.localizedDescription
+                AppLogger.error("createGame failed: \(message)", category: "Games")
+                return .error(message)
+            }
+        } catch {
+            // Handle other errors
+            let message = error.localizedDescription
+            AppLogger.error("createGame failed: \(message)", category: "Games")
+            return .error(message)
+        }
+    }
+
+    func deleteGame(id: String) async throws {
+        let path = String(format: Constants.API.Game.deleteGame, id)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
+        _ = try await HTTPClient.shared.load(resource)
+        games.removeAll(where: { $0.id == id })
+    }
+}
+
+// MARK: GameManager + Private methods
+
+extension GameManagerImpl {
+    private func createGame(_ payload: CreateGamePayload) async throws -> Game {
         guard let url = URL(string: Constants.API.Game.createGame) else {
             throw NetworkError.invalidURL
         }
@@ -93,14 +111,6 @@ final class GameManagerImpl: ObservableObject {
 
         let resource = Resource(url: url, method: .post(data), modelType: Game.self)
         return try await HTTPClient.shared.load(resource)
-    }
-
-    func deleteGame(id: String) async throws {
-        let path = String(format: Constants.API.Game.deleteGame, id)
-        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
-        let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
-        _ = try await HTTPClient.shared.load(resource)
-        games.removeAll(where: { $0.id == id })
     }
 }
 

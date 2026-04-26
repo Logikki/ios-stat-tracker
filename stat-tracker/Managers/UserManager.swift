@@ -157,7 +157,6 @@ final class UserManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        // Refresh silently in the background
         await fetchOwnUser(showLoadingIndicator: false)
     }
 
@@ -166,7 +165,6 @@ final class UserManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        // Refresh silently in the background
         await fetchOwnUser(showLoadingIndicator: false)
     }
 
