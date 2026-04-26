@@ -134,6 +134,11 @@ struct AddGameView: View {
         .alert("Game saved", isPresented: $viewModel.didSubmitSuccessfully) {
             Button("OK", role: .cancel) {}
         }
+        .alert("League not found", isPresented: $viewModel.leagueNotFoundAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("This league no longer exists. The game was not saved.")
+        }
     }
 }
 

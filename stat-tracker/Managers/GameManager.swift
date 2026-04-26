@@ -7,6 +7,27 @@
 
 import Foundation
 
+// Skips individual array elements that fail to decode (e.g. games with deleted/null players).
+private struct LossyArray<T: Decodable>: Decodable {
+    let elements: [T]
+
+    private struct Wrapper: Decodable {
+        let value: T?
+        init(from decoder: Decoder) throws { value = try? T(from: decoder) }
+    }
+
+    init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        var elements: [T] = []
+        while !container.isAtEnd {
+            if let value = try container.decode(Wrapper.self).value {
+                elements.append(value)
+            }
+        }
+        self.elements = elements
+    }
+}
+
 @MainActor
 final class GameManagerImpl: ObservableObject {
     @Published private(set) var games: [Game] = []
@@ -38,7 +59,7 @@ final class GameManagerImpl: ObservableObject {
                 return
             }
 
-            let resource = Resource(url: url, method: .get([]), modelType: [Game].self)
+            let resource = Resource(url: url, method: .get([]), modelType: LossyArray<Game>.self)
             do {
                 let fetched = try await HTTPClient.shared.load(resource)
 
@@ -47,7 +68,7 @@ final class GameManagerImpl: ObservableObject {
                     return
                 }
 
-                self.games = fetched.sorted(by: { $0.createdAt > $1.createdAt })
+                self.games = fetched.elements.sorted(by: { $0.createdAt > $1.createdAt })
             } catch is CancellationError {
                 AppLogger.info("Fetch games request cancelled", category: "Games")
             } catch {

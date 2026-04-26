@@ -55,6 +55,7 @@ final class AddGameViewModel: ObservableObject {
     @Published private(set) var isSubmitting: Bool = false
     @Published var errorMessage: String?
     @Published var didSubmitSuccessfully: Bool = false
+    @Published var leagueNotFoundAlert: Bool = false
 
     private let gameManager: GameManagerImpl
     private let userManager: UserManagerImpl
@@ -248,6 +249,13 @@ final class AddGameViewModel: ObservableObject {
                 await gameManager.fetchGames()
                 self.didSubmitSuccessfully = true
                 self.reset()
+            } catch let networkError as NetworkError {
+                if case .httpError(404, _) = networkError, selectedLeagueId != nil {
+                    self.leagueNotFoundAlert = true
+                } else {
+                    self.errorMessage = networkError.localizedDescription
+                }
+                AppLogger.error("createGame failed: \(networkError.localizedDescription)", category: "Games")
             } catch {
                 self.errorMessage = error.localizedDescription
                 AppLogger.error("createGame failed: \(error.localizedDescription)", category: "Games")
