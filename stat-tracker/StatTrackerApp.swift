@@ -22,7 +22,7 @@ struct Stat_trackerApp: App {
                 if appState.isLoadingInitialData {
                     LoadingScreen()
                 } else if appState.showAuthView {
-                    AuthView(viewModel: dependencies.getAuthViewModel())
+                    AuthView(viewModel: dependencies.createAuthViewModel())
                 } else {
                     AuthenticatedContentView()
                 }

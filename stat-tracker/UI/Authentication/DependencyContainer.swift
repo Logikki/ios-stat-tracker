@@ -29,11 +29,6 @@ final class DependencyContainer: ObservableObject {
 
     // MARK: - ViewModels (Cached to preserve state)
 
-    private(set) lazy var authViewModel: AuthViewModel = .init(
-        authenticationManager: authenticationManager,
-        userManager: userManager
-    )
-
     private var settingsViewModel: SettingsViewModel?
     private var gamesViewModel: GamesViewModel?
     private var leaguesViewModel: LeaguesViewModel?
@@ -58,8 +53,8 @@ final class DependencyContainer: ObservableObject {
     // MARK: - ViewModel Factory Methods
 
     /// Get the shared AuthViewModel (preserves login state)
-    func getAuthViewModel() -> AuthViewModel {
-        authViewModel
+    func createAuthViewModel() -> AuthViewModel {
+        AuthViewModel(authenticationManager: authenticationManager, userManager: userManager)
     }
 
     /// Get the shared SettingsViewModel (preserves settings state)
