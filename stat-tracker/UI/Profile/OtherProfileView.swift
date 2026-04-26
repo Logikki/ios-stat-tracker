@@ -18,7 +18,7 @@ struct OtherProfileView: View {
                 if profile.visible {
                     fullView(profile: profile)
                 } else {
-                    limitedView(username: profile.username, reason: profile.reason)
+                    limitedView(profile: profile)
                 }
             } else if viewModel.errorMessage != nil {
                 ContentUnavailableView("Couldn't load profile", systemImage: "person.slash")
@@ -49,14 +49,12 @@ struct OtherProfileView: View {
         Form {
             Section {
                 HStack(spacing: 16) {
-                    ZStack {
-                        Circle().fill(Color.blue.opacity(0.15))
-                        Text(initials(for: profile.name ?? profile.username))
-                            .font(.title.bold())
-                            .foregroundColor(.blue)
-                    }
-                    .frame(width: 64, height: 64)
-
+                    UserAvatarView(
+                        username: profile.username,
+                        initials: initials(for: profile.name ?? profile.username),
+                        size: 64,
+                        preloadedData: profile.avatarImageData
+                    )
                     VStack(alignment: .leading, spacing: 2) {
                         if let name = profile.name {
                             Text(name).font(.title3.bold())
@@ -111,15 +109,23 @@ struct OtherProfileView: View {
 
     // MARK: - Limited View
 
-    private func limitedView(username: String, reason: LimitedAccessReason?) -> some View {
-        VStack(spacing: 24) {
-            ZStack {
-                Circle().fill(Color.secondary.opacity(0.12))
-                Image(systemName: reason == .private ? "lock.fill" : "person.fill.questionmark")
-                    .font(.system(size: 36))
-                    .foregroundColor(.secondary)
+    private func limitedView(profile: OtherUserProfile) -> some View {
+        let username = profile.username
+        let reason = profile.reason
+        return VStack(spacing: 24) {
+            ZStack(alignment: .bottomTrailing) {
+                UserAvatarView(
+                    username: username,
+                    initials: String(username.prefix(1)).uppercased(),
+                    size: 80,
+                    preloadedData: profile.avatarImageData
+                )
+                Image(systemName: reason == .private ? "lock.circle.fill" : "questionmark.circle.fill")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, .secondary)
+                    .font(.title2)
+                    .offset(x: 4, y: 4)
             }
-            .frame(width: 80, height: 80)
 
             VStack(spacing: 6) {
                 Text("@\(username)").font(.title3.bold())

@@ -168,6 +168,47 @@ final class UserManagerImpl: ObservableObject {
         await fetchOwnUser(showLoadingIndicator: false)
     }
 
+    func uploadAvatar(_ jpeg: Data) async throws {
+        guard let url = URL(string: Constants.API.URL + Constants.API.User.uploadAvatar) else {
+            throw NetworkError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        if let token = AuthenticationManagerImpl.shared.authToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"avatar.jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(jpeg)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        let (_, response) = try await URLSession.shared.upload(for: request, from: body)
+        guard let http = response as? HTTPURLResponse, (200 ..< 300).contains(http.statusCode) else {
+            throw NetworkError.invalidResponse
+        }
+    }
+
+    func deleteAvatar() async throws {
+        guard let url = URL(string: Constants.API.URL + Constants.API.User.deleteAvatar) else {
+            throw NetworkError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        if let token = AuthenticationManagerImpl.shared.authToken {
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200 ..< 300).contains(http.statusCode) else {
+            throw NetworkError.invalidResponse
+        }
+    }
+
     func fetchUser(username: String) async throws -> OtherUserProfile {
         let path = String(format: Constants.API.User.getUser, username)
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }

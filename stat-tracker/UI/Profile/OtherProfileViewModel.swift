@@ -68,6 +68,7 @@ final class OtherProfileViewModel: ObservableObject {
                     matches: PreviewSamples.games,
                     leagues: [PreviewSamples.leagueWithMatches],
                     friends: [PreviewSamples.bob, PreviewSamples.carol],
+                    avatarBase64: "",
                     reason: nil
                 )
             )
@@ -81,6 +82,7 @@ final class OtherProfileViewModel: ObservableObject {
                     visible: false, username: "dave",
                     id: nil, name: nil, profileVisibility: nil,
                     matches: nil, leagues: nil, friends: nil,
+                    avatarBase64: "",
                     reason: .private
                 )
             )
@@ -94,6 +96,7 @@ final class OtherProfileViewModel: ObservableObject {
                     visible: false, username: "bob",
                     id: nil, name: nil, profileVisibility: nil,
                     matches: nil, leagues: nil, friends: nil,
+                    avatarBase64: "",
                     reason: .notFriends
                 )
             )

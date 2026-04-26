@@ -22,6 +22,13 @@ public struct OtherUserProfile: Decodable {
     public let matches: [Game]?
     public let leagues: [League]?
     public let friends: [LightUser]?
+    /// JPEG bytes encoded as Base64; nil if the user has no avatar.
+    public let avatarBase64: String?
     // Limited view
     public let reason: LimitedAccessReason?
+
+    public var avatarImageData: Data? {
+        guard let b64 = avatarBase64 else { return nil }
+        return Data(base64Encoded: b64)
+    }
 }

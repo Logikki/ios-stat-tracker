@@ -48,6 +48,9 @@ public enum Constants {
             public static let getOwnUser = "/api/user/own"
             public static let getUser = "/api/user/%@"
             public static let getUsers = "/api/users"
+            public static let getAvatar = "/api/user/%@/avatar"
+            public static let uploadAvatar = "/api/user/avatar"
+            public static let deleteAvatar = "/api/user/avatar"
         }
 
         public enum FriendRequest {

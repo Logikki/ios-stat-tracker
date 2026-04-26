@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
     @ObservedObject var viewModel: ProfileViewModel
     @EnvironmentObject var dependencies: DependencyContainer
+    @State private var photoPickerItem: PhotosPickerItem?
 
     var body: some View {
         Group {
@@ -48,13 +50,17 @@ struct ProfileView: View {
     private func headerSection(user: User) -> some View {
         Section {
             HStack(spacing: 16) {
-                ZStack {
-                    Circle().fill(Color.blue.opacity(0.15))
-                    Text(initials(for: user.name))
-                        .font(.title.bold())
-                        .foregroundColor(.blue)
+                PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                    UserAvatarView(username: user.username, initials: initials(for: user.name), size: 64)
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "pencil.circle.fill")
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color.accentColor)
+                                .font(.title3)
+                                .offset(x: 4, y: 4)
+                        }
                 }
-                .frame(width: 64, height: 64)
+                .buttonStyle(.plain)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(user.name).font(.title3.bold())
@@ -63,6 +69,11 @@ struct ProfileView: View {
                 }
                 Spacer()
             }
+        }
+        .onChange(of: photoPickerItem) { _, item in
+            guard let item else { return }
+            viewModel.uploadAvatar(item)
+            photoPickerItem = nil
         }
     }
 

@@ -7,6 +7,9 @@
 
 import Combine
 import Foundation
+import PhotosUI
+import UIKit
+import _PhotosUI_SwiftUI
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
@@ -36,6 +39,33 @@ final class ProfileViewModel: ObservableObject {
 
     func updateVisibility(_ visibility: ProfileVisibility) {
         Task { await userManager.updateVisibility(visibility) }
+    }
+
+    func uploadAvatar(_ item: PhotosPickerItem) {
+        Task {
+            guard let data = try? await item.loadTransferable(type: Data.self),
+                  let jpeg = compressToJpeg(data)
+            else { return }
+            do {
+                try await userManager.uploadAvatar(jpeg)
+                if let username = user?.username {
+                    AvatarCache.shared.invalidate(username: username)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func compressToJpeg(_ data: Data) -> Data? {
+        guard let image = UIImage(data: data) else { return nil }
+        // Scale down to 400×400 max to keep uploads small
+        let maxSide: CGFloat = 400
+        let scale = min(maxSide / image.size.width, maxSide / image.size.height, 1)
+        let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        let resized = renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: newSize)) }
+        return resized.jpegData(compressionQuality: 0.8)
     }
 
     func sendFriendRequest() {
