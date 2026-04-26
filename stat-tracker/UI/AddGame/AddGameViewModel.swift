@@ -8,6 +8,29 @@
 import Combine
 import Foundation
 
+// MARK: - Navigation Source
+
+/// Represents the screen from which the user navigated to add a game
+enum NavigationSource {
+    /// User navigated from the main games screen
+    case mainScreen
+    
+    /// User navigated from a specific league's detail view
+    case leagueDetails(League)
+    
+    /// The associated league, if navigated from league details
+    var league: League? {
+        switch self {
+        case .mainScreen:
+            return nil
+        case .leagueDetails(let league):
+            return league
+        }
+    }
+}
+
+// MARK: - Add Game View Model
+
 @MainActor
 final class AddGameViewModel: ObservableObject {
     @Published var gameType: GameType = .NHL
@@ -37,8 +60,12 @@ final class AddGameViewModel: ObservableObject {
     private let userManager: UserManagerImpl
     private let teamsManager: TeamsManager
 
-    // League context - when set, locks the league selection
+    /// Where the user navigated from
+    private let navigationSource: NavigationSource
+    
+    /// League context - when set, locks the league selection
     private let preselectedLeague: League?
+    
     var isLeagueLocked: Bool {
         preselectedLeague != nil
     }
@@ -53,6 +80,13 @@ final class AddGameViewModel: ObservableObject {
         self.userManager = userManager
         self.teamsManager = teamsManager
         self.preselectedLeague = preselectedLeague
+        
+        // Determine navigation source based on preselected league
+        if let league = preselectedLeague {
+            self.navigationSource = .leagueDetails(league)
+        } else {
+            self.navigationSource = .mainScreen
+        }
 
         // If coming from a league, pre-select it
         if let league = preselectedLeague {
@@ -84,20 +118,66 @@ final class AddGameViewModel: ObservableObject {
         teamsManager.getNHLTeams()
     }
 
-    /// Friends + everyone in any of my leagues — unique by username, alphabetical.
+    // MARK: - Opponent Selection Logic
+    
+    /// Returns the currently selected league, if any
+    private var activeLeague: League? {
+        guard let leagueId = selectedLeagueId else { return nil }
+        
+        // First check if it's the preselected league
+        if let preselected = preselectedLeague, preselected.id == leagueId {
+            return preselected
+        }
+        
+        // Otherwise find it in the user's leagues
+        return userManager.currentUserProfile?.leagues.first(where: { $0.id == leagueId })
+    }
+    
     var availableOpponents: [LightUser] {
         guard let me = userManager.currentUserProfile else { return [] }
-        var seen: Set<String> = [me.username]
+        
+        if let league = activeLeague {
+            return filterLeagueMembers(from: league, excludingUsername: me.username)
+        }
+        
+        switch navigationSource {
+        case .leagueDetails(let league):
+            return filterLeagueMembers(from: league, excludingUsername: me.username)
+            
+        case .mainScreen:
+            return filterFriendsAndLeagueMembers(excludingUsername: me.username)
+        }
+    }
+    
+    private func filterLeagueMembers(from league: League, excludingUsername: String) -> [LightUser] {
+        var seen = Set<String>([excludingUsername])
+        var members: [LightUser] = []
+        
+        for user in league.users where seen.insert(user.username).inserted {
+            members.append(user)
+        }
+        
+        return members.sorted { $0.username.lowercased() < $1.username.lowercased() }
+    }
+    
+    private func filterFriendsAndLeagueMembers(excludingUsername: String) -> [LightUser] {
+        guard let me = userManager.currentUserProfile else { return [] }
+        
+        var seen = Set<String>([excludingUsername])
         var pool: [LightUser] = []
+        
+        // Add friends
         for friend in me.friends where seen.insert(friend.username).inserted {
             pool.append(friend)
         }
+        
         for league in me.leagues {
             for member in league.users where seen.insert(member.username).inserted {
                 pool.append(member)
             }
         }
-        return pool.sorted(by: { $0.username.lowercased() < $1.username.lowercased() })
+        
+        return pool.sorted { $0.username.lowercased() < $1.username.lowercased() }
     }
 
     var canPickFromList: Bool {
@@ -164,7 +244,7 @@ final class AddGameViewModel: ObservableObject {
             defer { self.isSubmitting = false }
             do {
                 _ = try await gameManager.createGame(payload)
-                await userManager.fetchOwnUser()
+                await userManager.fetchOwnUser(showLoadingIndicator: false)
                 await gameManager.fetchGames()
                 self.didSubmitSuccessfully = true
                 self.reset()
