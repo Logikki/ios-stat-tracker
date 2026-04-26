@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AddGameView: View {
     @ObservedObject var viewModel: AddGameViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         Form {
@@ -132,12 +133,22 @@ struct AddGameView: View {
         }
         .navigationTitle("Add game")
         .alert("Game saved", isPresented: $viewModel.didSubmitSuccessfully) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) {
+                dismiss()
+            }
         }
         .alert("League not found", isPresented: $viewModel.leagueNotFoundAlert) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("This league no longer exists. The game was not saved.")
+        }
+        .onChange(of: viewModel.didSubmitSuccessfully) { _, newValue in
+            if newValue {
+                // Automatically dismiss after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
         }
     }
 }

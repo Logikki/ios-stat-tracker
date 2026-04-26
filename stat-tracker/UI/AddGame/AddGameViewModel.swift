@@ -226,7 +226,6 @@ final class AddGameViewModel: ObservableObject {
 
         isSubmitting = true
         errorMessage = nil
-        leagueNotFoundAlert = false
 
         let payload = CreateGamePayload(
             homeTeam: homeTeam,
@@ -245,15 +244,14 @@ final class AddGameViewModel: ObservableObject {
         Task {
             defer { self.isSubmitting = false }
             
+            // Use the manager's error handling method
             let result = await gameManager.createGameWithErrorHandling(payload)
             
             switch result {
             case .success:
-                // Refresh data in the background
                 await userManager.fetchOwnUser(showLoadingIndicator: false)
                 await gameManager.fetchGames()
                 
-                // Notify success
                 self.didSubmitSuccessfully = true
                 self.reset()
                 
