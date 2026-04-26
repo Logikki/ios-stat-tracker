@@ -9,12 +9,16 @@ import SwiftUI
 
 struct GamesView: View {
     @ObservedObject var viewModel: GamesViewModel
+    @EnvironmentObject var dependencies: DependencyContainer
 
     var body: some View {
         contentView
             .navigationTitle("Games")
             .navigationDestination(for: Game.self) { game in
                 GameDetailView(game: game, currentUsername: viewModel.currentUsername)
+            }
+            .navigationDestination(for: LightUser.self) { user in
+                OtherProfileView(viewModel: dependencies.createOtherProfileViewModel(username: user.username))
             }
             .refreshable {
                 await viewModel.refresh()
@@ -132,13 +136,17 @@ struct GameDetailView: View {
 
             Section("Home") {
                 LabeledContent("Team", value: game.homeTeam)
-                LabeledContent("Player", value: "@\(game.homePlayer.username)")
+                NavigationLink(value: game.homePlayer) {
+                    LabeledContent("Player", value: "@\(game.homePlayer.username)")
+                }
                 LabeledContent("Score", value: "\(game.homeScore)")
             }
 
             Section("Away") {
                 LabeledContent("Team", value: game.awayTeam)
-                LabeledContent("Player", value: "@\(game.awayPlayer.username)")
+                NavigationLink(value: game.awayPlayer) {
+                    LabeledContent("Player", value: "@\(game.awayPlayer.username)")
+                }
                 LabeledContent("Score", value: "\(game.awayScore)")
             }
 

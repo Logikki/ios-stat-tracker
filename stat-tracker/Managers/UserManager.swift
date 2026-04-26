@@ -168,6 +168,13 @@ final class UserManagerImpl: ObservableObject {
         await fetchOwnUser(showLoadingIndicator: false)
     }
 
+    func fetchUser(username: String) async throws -> OtherUserProfile {
+        let path = String(format: Constants.API.User.getUser, username)
+        guard let url = URL(string: path) else { throw NetworkError.invalidURL }
+        let resource = Resource(url: url, method: .get([]), modelType: OtherUserProfile.self)
+        return try await HTTPClient.shared.load(resource)
+    }
+
     func clearError() {
         errorMessage = nil
     }

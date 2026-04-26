@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var viewModel: ProfileViewModel
+    @EnvironmentObject var dependencies: DependencyContainer
 
     var body: some View {
         Group {
@@ -27,6 +28,9 @@ struct ProfileView: View {
             }
         }
         .navigationTitle("Profile")
+        .navigationDestination(for: LightUser.self) { user in
+            OtherProfileView(viewModel: dependencies.createOtherProfileViewModel(username: user.username))
+        }
         .refreshable { await viewModel.refresh() }
         .alert(
             "Notice",
@@ -128,16 +132,18 @@ struct ProfileView: View {
                 )
             } else {
                 ForEach(user.friends) { friend in
-                    HStack {
-                        Text("@\(friend.username)")
-                        Spacer()
-                        Button(role: .destructive) {
-                            viewModel.remove(friend.username)
-                        } label: {
-                            Image(systemName: "person.fill.xmark")
+                    NavigationLink(value: friend) {
+                        HStack {
+                            Text("@\(friend.username)")
+                            Spacer()
+                            Button(role: .destructive) {
+                                viewModel.remove(friend.username)
+                            } label: {
+                                Image(systemName: "person.fill.xmark")
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
                     }
                 }
             }
@@ -163,7 +169,7 @@ struct ProfileView: View {
     }
 }
 
-private struct StatTile: View {
+struct StatTile: View {
     let label: String
     let value: String
     var color: Color = .primary

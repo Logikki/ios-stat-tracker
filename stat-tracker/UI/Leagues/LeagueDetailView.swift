@@ -149,18 +149,23 @@ struct LeagueDetailView: View {
     private var membersSection: some View {
         Section("Members (\(viewModel.league.users.count))") {
             ForEach(viewModel.league.users) { user in
-                HStack {
-                    Text("@\(user.username)")
-                    if viewModel.league.isAdmin(username: user.username) {
-                        Text("Admin")
-                            .font(.caption2.bold())
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(Color.orange.opacity(0.2))
-                            .foregroundColor(.orange)
-                            .clipShape(Capsule())
+                NavigationLink(value: user) {
+                    HStack {
+                        Text("@\(user.username)")
+                        if viewModel.league.isAdmin(username: user.username) {
+                            Text("Admin")
+                                .font(.caption2.bold())
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Color.orange.opacity(0.2))
+                                .foregroundColor(.orange)
+                                .clipShape(Capsule())
+                        }
                     }
                 }
             }
+        }
+        .navigationDestination(for: LightUser.self) { user in
+            OtherProfileView(viewModel: dependencies.createOtherProfileViewModel(username: user.username))
         }
     }
 

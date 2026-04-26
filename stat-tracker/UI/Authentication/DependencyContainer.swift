@@ -119,6 +119,10 @@ final class DependencyContainer: ObservableObject {
         )
     }
 
+    func createOtherProfileViewModel(username: String) -> OtherProfileViewModel {
+        OtherProfileViewModel(username: username, userManager: userManager)
+    }
+
     func createJoinLeagueViewModel() -> JoinLeagueViewModel {
         JoinLeagueViewModel(
             leagueManager: leagueManager,
