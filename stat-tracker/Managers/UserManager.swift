@@ -31,7 +31,8 @@ final class UserManagerImpl: ObservableObject {
                     guard let self else { return }
 
                     if isAuthenticated {
-                        await self.fetchOwnUser()
+                        // Show loading indicator only on initial login
+                        await self.fetchOwnUser(showLoadingIndicator: true)
                     } else {
                         self.currentUserProfile = nil
                         self.errorMessage = nil
@@ -44,19 +45,27 @@ final class UserManagerImpl: ObservableObject {
 
     // MARK: - Networking
 
-    // TODO: Do not update whole app when realoaded
-    func fetchOwnUser() async {
+    /// Fetch the current user's profile
+    /// - Parameter showLoadingIndicator: If true, sets isLoading which triggers the full-screen loading state
+    func fetchOwnUser(showLoadingIndicator: Bool = false) async {
         fetchTask?.cancel()
 
-        guard !isLoading else {
+        // Skip if already loading
+        if isLoading, showLoadingIndicator {
             AppLogger.info("Fetch already in progress, skipping duplicate call", category: "UserManagement")
             return
         }
 
         fetchTask = Task { @MainActor in
-            isLoading = true
+            if showLoadingIndicator {
+                isLoading = true
+            }
             errorMessage = nil
-            defer { isLoading = false }
+            defer {
+                if showLoadingIndicator {
+                    isLoading = false
+                }
+            }
 
             guard let url = URL(string: Constants.API.User.getOwnUser) else {
                 errorMessage = "Failed to build user URL."
@@ -117,7 +126,8 @@ final class UserManagerImpl: ObservableObject {
         let resource = Resource(url: url, method: .post(data), modelType: EmptyResponse.self)
         do {
             _ = try await HTTPClient.shared.load(resource)
-            await fetchOwnUser()
+            // Refresh silently in the background
+            await fetchOwnUser(showLoadingIndicator: false)
         } catch {
             await MainActor.run {
                 errorMessage = error.localizedDescription
@@ -138,7 +148,8 @@ final class UserManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .post(nil), modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        await fetchOwnUser()
+        // Refresh silently in the background
+        await fetchOwnUser(showLoadingIndicator: false)
     }
 
     func rejectFriendRequest(from username: String) async throws {
@@ -146,7 +157,8 @@ final class UserManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        await fetchOwnUser()
+        // Refresh silently in the background
+        await fetchOwnUser(showLoadingIndicator: false)
     }
 
     func removeFriend(_ username: String) async throws {
@@ -154,7 +166,8 @@ final class UserManagerImpl: ObservableObject {
         guard let url = URL(string: path) else { throw NetworkError.invalidURL }
         let resource = Resource(url: url, method: .delete, modelType: EmptyResponse.self)
         _ = try await HTTPClient.shared.load(resource)
-        await fetchOwnUser()
+        // Refresh silently in the background
+        await fetchOwnUser(showLoadingIndicator: false)
     }
 
     func clearError() {

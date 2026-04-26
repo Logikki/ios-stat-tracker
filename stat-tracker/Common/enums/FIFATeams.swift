@@ -146,6 +146,6 @@ extension FifaTeam {
         "Serie A",
         "Bundesliga",
         "Ligue 1",
-        "National Teams"
+        "National Teams",
     ]
 }

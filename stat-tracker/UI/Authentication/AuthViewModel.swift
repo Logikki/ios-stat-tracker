@@ -23,7 +23,14 @@ final class AuthViewModel: ObservableObject, Loggable {
     @Published var email: String = ""
     @Published var visibility: ProfileVisibility = .Friends
 
-    @Published var errorMessage: String?
+    @Published var errorMessage: String? {
+        didSet {
+            print("📝 errorMessage changed from '\(oldValue ?? "nil")' to '\(errorMessage ?? "nil")'")
+            print("📝 Stack trace:")
+            Thread.callStackSymbols.forEach { print("   \($0)") }
+        }
+    }
+
     @Published private(set) var overallLoading: Bool = false
 
     private let authManager: AuthenticationManagerImpl
@@ -90,10 +97,13 @@ final class AuthViewModel: ObservableObject, Loggable {
             do {
                 let response = try await HTTPClient.shared.load(resource)
                 self.authManager.setAuthState(response: response)
+                // Don't call fetchOwnUser here - the UserManager will do it automatically
+                // when it observes isAuthenticated changing to true
                 self.errorMessage = nil
             } catch {
                 let message = friendlyMessage(for: error, fallback: "Login failed.")
                 self.errorMessage = message
+                self.authManager.clearAuthState()
                 AppLogger.error("\(self.tag)::Login failed: \(error.localizedDescription), message='\(message)'", category: "Authentication")
             }
         }
@@ -109,7 +119,7 @@ final class AuthViewModel: ObservableObject, Loggable {
         let email = self.email
         let visibility = self.visibility
 
-        Task {
+        Task { @MainActor in
             defer { self.overallLoading = false }
             do {
                 try await self.userManager.createUser(
@@ -133,7 +143,8 @@ final class AuthViewModel: ObservableObject, Loggable {
                 let loginResource = Resource(url: url, method: .post(body), modelType: AuthResponse.self)
                 let response = try await HTTPClient.shared.load(loginResource)
                 self.authManager.setAuthState(response: response)
-                await self.userManager.fetchOwnUser()
+                // Don't call fetchOwnUser here - the UserManager will do it automatically
+                // when it observes isAuthenticated changing to true
                 self.errorMessage = nil
             } catch {
                 self.errorMessage = friendlyMessage(for: error, fallback: "Sign up failed.")

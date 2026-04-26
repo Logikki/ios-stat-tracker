@@ -26,6 +26,7 @@ class AppState: ObservableObject {
     }
 
     private func setup() {
+        // Set initial state immediately based on current values
         showAuthView = !authManager.isAuthenticated
         if authManager.isAuthenticated {
             isLoadingInitialData = userManager.isLoading
@@ -33,11 +34,12 @@ class AppState: ObservableObject {
             isLoadingInitialData = false
         }
 
+        // Combine auth and loading states with debouncing to prevent rapid updates
         Publishers.CombineLatest(
             authManager.$isAuthenticated,
             userManager.$isLoading
         )
-//        .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+        .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
         .sink { [weak self] isAuthenticated, userManagerIsLoading in
             guard let self else { return }
 
@@ -51,9 +53,9 @@ class AppState: ObservableObject {
         }
         .store(in: &cancellables)
 
+        // Handle error messages
         userManager.$errorMessage
-            .receive(on: DispatchQueue.main)
-            .compactMap { $0 }
+            .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
             .sink { [weak self] errorMessage in
                 guard let self else { return }
                 self.errorMessage = errorMessage

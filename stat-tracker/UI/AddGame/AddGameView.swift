@@ -146,7 +146,7 @@ struct IceHockeyTeamPicker: View {
         Section("Teams (Ice Hockey)") {
             Picker("Home team", selection: $viewModel.homeTeam) {
                 Text("Choose…").tag("")
-                
+
                 ForEach(HockeyTeam.leagueOrder, id: \.self) { (leagueName: String) in
                     Section(header: Text(leagueName)) {
                         ForEach(HockeyTeam.teams(inLeague: leagueName)) { (team: HockeyTeam) in
@@ -180,7 +180,7 @@ struct FifaTeamPicker: View {
         Section("Teams (FIFA / EA FC)") {
             Picker("Home team", selection: $viewModel.homeTeam) {
                 Text("Choose…").tag("")
-                
+
                 ForEach(FifaTeam.leagueOrder, id: \.self) { (leagueName: String) in
                     Section(header: Text(leagueName)) {
                         ForEach(FifaTeam.teams(inLeague: leagueName)) { (team: FifaTeam) in

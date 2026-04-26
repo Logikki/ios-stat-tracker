@@ -10,34 +10,43 @@ import SwiftUI
 struct AuthenticatedContentView: View {
     @EnvironmentObject var dependencies: DependencyContainer
 
+    @State private var selectedTab: Tab = .games
     @State private var showSettings = false
     @AppStorage("isDarkMode") private var isDarkMode = true
 
+    enum Tab {
+        case games, add, leagues, profile
+    }
+
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 GamesView(viewModel: dependencies.getGamesViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Games", systemImage: "list.bullet.rectangle") }
+            .tag(Tab.games)
 
             NavigationStack {
                 AddGameView(viewModel: dependencies.createAddGameViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Add", systemImage: "plus.circle.fill") }
+            .tag(Tab.add)
 
             NavigationStack {
                 LeaguesView(viewModel: dependencies.getLeaguesViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Leagues", systemImage: "trophy") }
+            .tag(Tab.leagues)
 
             NavigationStack {
                 ProfileView(viewModel: dependencies.getProfileViewModel())
                     .toolbar { settingsToolbar }
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+            .tag(Tab.profile)
         }
         .tint(.blue)
         .preferredColorScheme(isDarkMode ? .dark : .light)

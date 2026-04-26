@@ -39,6 +39,6 @@ public struct User: Codable, Identifiable, Hashable {
     public let profileVisibility: ProfileVisibility
     public let matches: [Game]
     public let leagues: [League]
-    public let friends: [LightUser]
-    public let friendRequests: [LightUser]
+    public var friends: [LightUser]
+    public var friendRequests: [LightUser]
 }
