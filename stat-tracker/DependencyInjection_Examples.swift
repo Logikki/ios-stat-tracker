@@ -14,13 +14,13 @@ import SwiftUI
 struct ExampleGamesView: View {
     @EnvironmentObject var dependencies: DependencyContainer
     @StateObject private var viewModel: GamesViewModel
-    
+
     init() {
         // Get the cached ViewModel from dependencies
         // This will be called when the view is created
         _viewModel = StateObject(wrappedValue: DependencyContainer.shared.getGamesViewModel())
     }
-    
+
     var body: some View {
         List {
             ForEach(viewModel.games) { game in
@@ -35,7 +35,7 @@ struct ExampleGamesView: View {
 
 struct ExampleSettingsView: View {
     @EnvironmentObject var dependencies: DependencyContainer
-    
+
     var body: some View {
         List {
             Section {
@@ -44,7 +44,7 @@ struct ExampleSettingsView: View {
                     Text("Logged in as @\(username)")
                 }
             }
-            
+
             Section {
                 Button("Logout") {
                     dependencies.authenticationManager.clearAuthState()
@@ -61,12 +61,12 @@ struct ExampleSettingsView: View {
 struct ExampleAddGameSheet: View {
     @EnvironmentObject var dependencies: DependencyContainer
     @StateObject private var viewModel: AddGameViewModel
-    
+
     let league: League?
-    
+
     init(league: League? = nil) {
         self.league = league
-        
+
         // Create a new ViewModel each time this sheet appears
         if let league = league {
             _viewModel = StateObject(wrappedValue: DependencyContainer.shared.createAddGameViewModel(forLeague: league))
@@ -74,7 +74,7 @@ struct ExampleAddGameSheet: View {
             _viewModel = StateObject(wrappedValue: DependencyContainer.shared.createAddGameViewModel())
         }
     }
-    
+
     var body: some View {
         Form {
             // Your add game form here
@@ -86,14 +86,14 @@ struct ExampleAddGameSheet: View {
 // MARK: - Example 4: Accessing Dependencies in Previews
 
 #if DEBUG
-struct ExampleGamesView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack {
-            ExampleGamesView()
-                .environmentObject(DependencyContainer.shared)
+    struct ExampleGamesView_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationStack {
+                ExampleGamesView()
+                    .environmentObject(DependencyContainer.shared)
+            }
         }
     }
-}
 #endif
 
 // MARK: - Alternative Pattern: Property Wrapper for Dependencies
@@ -102,21 +102,21 @@ struct ExampleGamesView_Previews: PreviewProvider {
 @propertyWrapper
 struct Injected<T> {
     private let keyPath: KeyPath<DependencyContainer, T>
-    
+
     var wrappedValue: T {
         DependencyContainer.shared[keyPath: keyPath]
     }
-    
+
     init(_ keyPath: KeyPath<DependencyContainer, T>) {
         self.keyPath = keyPath
     }
 }
 
-// Usage example:
+/// Usage example:
 struct ExampleWithPropertyWrapper: View {
     @Injected(\.userManager) var userManager
     @Injected(\.gameManager) var gameManager
-    
+
     var body: some View {
         VStack {
             if let user = userManager.currentUserProfile {

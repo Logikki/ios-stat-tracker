@@ -11,60 +11,57 @@ import SwiftUI
 /// Use this as a single source of truth for all dependencies
 @MainActor
 final class DependencyContainer: ObservableObject {
-    
     // MARK: - Singleton
-    
+
     static let shared = DependencyContainer()
-    
+
     // MARK: - Core Services (Created once, reused everywhere)
-    
+
     let authenticationManager: AuthenticationManagerImpl
     let userManager: UserManagerImpl
     let gameManager: GameManagerImpl
     let leagueManager: LeagueManagerImpl
     let teamsManager: TeamsManager
-    
+
     // MARK: - App State
-    
+
     let appState: AppState
-    
+
     // MARK: - ViewModels (Cached to preserve state)
-    
-    private(set) lazy var authViewModel: AuthViewModel = {
-        AuthViewModel(
-            authenticationManager: authenticationManager,
-            userManager: userManager
-        )
-    }()
-    
+
+    private(set) lazy var authViewModel: AuthViewModel = .init(
+        authenticationManager: authenticationManager,
+        userManager: userManager
+    )
+
     private var settingsViewModel: SettingsViewModel?
     private var gamesViewModel: GamesViewModel?
     private var leaguesViewModel: LeaguesViewModel?
     private var profileViewModel: ProfileViewModel?
-    
+
     // MARK: - Initialization
-    
+
     private init() {
         // Initialize core services in dependency order
-        self.authenticationManager = AuthenticationManagerImpl.shared
-        self.userManager = UserManagerImpl(authenticationManager: authenticationManager)
-        self.gameManager = GameManagerImpl()
-        self.leagueManager = LeagueManagerImpl()
-        self.teamsManager = TeamsManagerImpl()
-        
-        self.appState = AppState(
+        authenticationManager = AuthenticationManagerImpl.shared
+        userManager = UserManagerImpl(authenticationManager: authenticationManager)
+        gameManager = GameManagerImpl()
+        leagueManager = LeagueManagerImpl()
+        teamsManager = TeamsManagerImpl()
+
+        appState = AppState(
             authManager: authenticationManager,
             userManager: userManager
         )
     }
-    
+
     // MARK: - ViewModel Factory Methods
-    
+
     /// Get the shared AuthViewModel (preserves login state)
     func getAuthViewModel() -> AuthViewModel {
         authViewModel
     }
-    
+
     /// Get the shared SettingsViewModel (preserves settings state)
     func getSettingsViewModel() -> SettingsViewModel {
         if settingsViewModel == nil {
@@ -72,7 +69,7 @@ final class DependencyContainer: ObservableObject {
         }
         return settingsViewModel!
     }
-    
+
     /// Get the shared GamesViewModel (preserves filters/state)
     func getGamesViewModel() -> GamesViewModel {
         if gamesViewModel == nil {
@@ -83,7 +80,7 @@ final class DependencyContainer: ObservableObject {
         }
         return gamesViewModel!
     }
-    
+
     /// Get the shared LeaguesViewModel
     func getLeaguesViewModel() -> LeaguesViewModel {
         if leaguesViewModel == nil {
@@ -91,18 +88,18 @@ final class DependencyContainer: ObservableObject {
         }
         return leaguesViewModel!
     }
-    
+
     func getProfileViewModel() -> ProfileViewModel {
         if profileViewModel == nil {
             profileViewModel = ProfileViewModel(userManager: userManager)
         }
         return profileViewModel!
     }
-    
+
     // MARK: - Transient ViewModels (Create new each time)
-    
-    /// These ViewModels are context-specific and should be created fresh
-    
+
+    // These ViewModels are context-specific and should be created fresh
+
     func createAddGameViewModel() -> AddGameViewModel {
         AddGameViewModel(
             gameManager: gameManager,
@@ -110,7 +107,7 @@ final class DependencyContainer: ObservableObject {
             teamsManager: teamsManager
         )
     }
-    
+
     func createAddGameViewModel(forLeague league: League) -> AddGameViewModel {
         AddGameViewModel(
             gameManager: gameManager,
@@ -119,21 +116,21 @@ final class DependencyContainer: ObservableObject {
             preselectedLeague: league
         )
     }
-    
+
     func createCreateLeagueViewModel() -> CreateLeagueViewModel {
         CreateLeagueViewModel(
             leagueManager: leagueManager,
             userManager: userManager
         )
     }
-    
+
     func createJoinLeagueViewModel() -> JoinLeagueViewModel {
         JoinLeagueViewModel(
             leagueManager: leagueManager,
             userManager: userManager
         )
     }
-    
+
     func createLeagueDetailViewModel(league: League) -> LeagueDetailViewModel {
         LeagueDetailViewModel(
             league: league,
@@ -142,9 +139,9 @@ final class DependencyContainer: ObservableObject {
             authManager: authenticationManager
         )
     }
-    
+
     // MARK: - Lifecycle Methods
-    
+
     func resetViewModels() {
         settingsViewModel = nil
         gamesViewModel = nil
@@ -170,6 +167,6 @@ extension EnvironmentValues {
 
 extension View {
     func withDependencies(_ container: DependencyContainer = .shared) -> some View {
-        self.environmentObject(container)
+        environmentObject(container)
     }
 }

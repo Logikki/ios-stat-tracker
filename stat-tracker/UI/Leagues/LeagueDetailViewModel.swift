@@ -37,9 +37,9 @@ final class LeagueDetailViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self else { return }
-                
+
                 self.currentUserName = profile?.username
-                
+
                 if let updated = profile?.leagues.first(where: { $0.id == league.id }) {
                     self.league = updated
                 }

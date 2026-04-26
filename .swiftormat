@@ -1,24 +1,4 @@
---exclude Pods
---exclude SignalServiceKit/Protos/Generated
---exclude Signal/Emoji/Generated
---exclude **/*.pb.swift
---exclude **/*+SDS.swift
-
---swift-version 6.2
---language-mode 5
-
-# The following are the set of enabled rules.
-#
-# Most SwiftFormat rules have a set of associated "options"; for those rules
-# where we use non-default options, the option is grouped next to the rule using
-# indentation.
-#
-# - Important
-# While most options (and at the time of writing, all options explicitly
-# included here) only affect a single rule, they are "SwiftFormat-wide" and
-# some rules do apply to multiple options. Take care when adding new rules, or
-# adding a new option, that any potential interactions with other existing
-# rules/options is accounted for.
+--swift-version 5.0
 
 --rules andOperator
 --rules anyObjectProtocol
@@ -34,6 +14,7 @@
 --rules elseOnSameLine
 --rules emptyExtensions
 --rules enumNamespaces
+--rules wrap
 --rules indent
   --ifdef outdent
   --indent 4
@@ -48,8 +29,7 @@
 --rules redundantInternal
 --rules redundantMemberwiseInit
 --rules redundantOptionalBinding
-# Disabled because of `@MainActor () async throws -> ...` closures.
-# --rules redundantParens
+--rules trailingCommas
 --rules redundantPattern
 --rules redundantPublic
 --rules semicolons
@@ -69,13 +49,12 @@
 --rules spaceInsideComments
 --rules spaceInsideParens
 --rules strongifiedSelf
---rules trailingCommas
 --rules trailingSpace
 --rules void
 --rules wrapArguments
   --allow-partial-wrapping false
   --wrap-arguments before-first
-  --wrap-collections before-first
+  --wrap-collections always
   --wrap-parameters before-first
   --wrap-conditions before-first
   --call-site-paren balanced
@@ -85,3 +64,4 @@
   --type-attributes prev-line
 --rules wrapEnumCases
 --rules wrapMultilineStatementBraces
+--trailing-commas never

@@ -67,24 +67,20 @@ final class AddGameViewModel: ObservableObject {
     }
 
     var leaguesForCurrentType: [League] {
-        // If league is locked, only show that league
         if let locked = preselectedLeague {
             return [locked]
         }
 
-        // Otherwise show all leagues that support this game type
         let userLeagues = userManager.currentUserProfile?.leagues ?? []
         return userLeagues.filter { $0.gameTypes.contains(gameType.rawValue) }
     }
 
     var shouldShowLeaguePicker: Bool {
-        // Always show if there's a preselected league (to display it)
         if preselectedLeague != nil { return true }
-        // Otherwise show if there are leagues available
         return !leaguesForCurrentType.isEmpty
     }
 
-    var nhlTeams: [NHLTeam] {
+    var nhlTeams: [HockeyTeam] {
         teamsManager.getNHLTeams()
     }
 

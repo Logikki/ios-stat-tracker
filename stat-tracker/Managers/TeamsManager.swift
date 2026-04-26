@@ -6,13 +6,13 @@
 //
 
 protocol TeamsManager {
-    func getNHLTeams() -> [NHLTeam]
+    func getNHLTeams() -> [HockeyTeam]
 }
 
 final class TeamsManagerImpl: TeamsManager {
-    let availableTeams = NHLTeam.allCases
+    let availableTeams = HockeyTeam.allCases
 
-    func getNHLTeams() -> [NHLTeam] {
+    func getNHLTeams() -> [HockeyTeam] {
         return availableTeams
     }
 }

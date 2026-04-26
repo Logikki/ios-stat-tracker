@@ -84,7 +84,7 @@ final class AuthViewModel: ObservableObject, Loggable {
         let resource = Resource(url: url, method: .post(body), modelType: AuthResponse.self)
 
         Task { @MainActor in
-            defer { 
+            defer {
                 self.overallLoading = false
             }
             do {

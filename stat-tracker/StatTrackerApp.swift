@@ -11,7 +11,7 @@ import SwiftUI
 struct Stat_trackerApp: App {
     private let dependencies = DependencyContainer.shared
     @StateObject private var appState: AppState
-    
+
     init() {
         _appState = StateObject(wrappedValue: DependencyContainer.shared.appState)
     }

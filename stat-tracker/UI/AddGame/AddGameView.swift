@@ -65,24 +65,12 @@ struct AddGameView: View {
                 }
             }
 
-            Section(viewModel.gameType == .NHL ? "Teams (NHL)" : "Teams") {
-                if viewModel.gameType == .NHL {
-                    Picker("Home team", selection: $viewModel.homeTeam) {
-                        Text("Choose…").tag("")
-                        ForEach(viewModel.nhlTeams) { team in
-                            Text(team.rawValue).tag(team.rawValue)
-                        }
-                    }
-                    Picker("Away team", selection: $viewModel.awayTeam) {
-                        Text("Choose…").tag("")
-                        ForEach(viewModel.nhlTeams) { team in
-                            Text(team.rawValue).tag(team.rawValue)
-                        }
-                    }
-                } else {
-                    TextField("Home team", text: $viewModel.homeTeam)
-                    TextField("Away team", text: $viewModel.awayTeam)
-                }
+            // MARK: - Teams Logic
+
+            if viewModel.gameType == .NHL {
+                IceHockeyTeamPicker(viewModel: viewModel)
+            } else {
+                FifaTeamPicker(viewModel: viewModel)
             }
 
             Section("Score") {
@@ -145,6 +133,74 @@ struct AddGameView: View {
         .navigationTitle("Add game")
         .alert("Game saved", isPresented: $viewModel.didSubmitSuccessfully) {
             Button("OK", role: .cancel) {}
+        }
+    }
+}
+
+// MARK: - Ice Hockey Picker Component
+
+struct IceHockeyTeamPicker: View {
+    @ObservedObject var viewModel: AddGameViewModel
+
+    var body: some View {
+        Section("Teams (Ice Hockey)") {
+            Picker("Home team", selection: $viewModel.homeTeam) {
+                Text("Choose…").tag("")
+                
+                ForEach(HockeyTeam.leagueOrder, id: \.self) { (leagueName: String) in
+                    Section(header: Text(leagueName)) {
+                        ForEach(HockeyTeam.teams(inLeague: leagueName)) { (team: HockeyTeam) in
+                            Text(team.displayName).tag(team.displayName)
+                        }
+                    }
+                }
+            }
+
+            Picker("Away team", selection: $viewModel.awayTeam) {
+                Text("Choose…").tag("")
+
+                ForEach(HockeyTeam.leagueOrder, id: \.self) { (leagueName: String) in
+                    Section(header: Text(leagueName)) {
+                        ForEach(HockeyTeam.teams(inLeague: leagueName)) { (team: HockeyTeam) in
+                            Text(team.displayName).tag(team.displayName)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - FIFA Team Picker Component
+
+struct FifaTeamPicker: View {
+    @ObservedObject var viewModel: AddGameViewModel
+
+    var body: some View {
+        Section("Teams (FIFA / EA FC)") {
+            Picker("Home team", selection: $viewModel.homeTeam) {
+                Text("Choose…").tag("")
+                
+                ForEach(FifaTeam.leagueOrder, id: \.self) { (leagueName: String) in
+                    Section(header: Text(leagueName)) {
+                        ForEach(FifaTeam.teams(inLeague: leagueName)) { (team: FifaTeam) in
+                            Text(team.displayName).tag(team.displayName)
+                        }
+                    }
+                }
+            }
+
+            Picker("Away team", selection: $viewModel.awayTeam) {
+                Text("Choose…").tag("")
+
+                ForEach(FifaTeam.leagueOrder, id: \.self) { (leagueName: String) in
+                    Section(header: Text(leagueName)) {
+                        ForEach(FifaTeam.teams(inLeague: leagueName)) { (team: FifaTeam) in
+                            Text(team.displayName).tag(team.displayName)
+                        }
+                    }
+                }
+            }
         }
     }
 }
