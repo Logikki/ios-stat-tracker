@@ -9,18 +9,26 @@ import SwiftUI
 
 struct LeagueDetailView: View {
     @ObservedObject var viewModel: LeagueDetailViewModel
+    @ObservedObject private var chatVM: LeagueChatViewModel
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dependencies: DependencyContainer
 
     @State private var showInvitationSheet = false
     @State private var showAddGame = false
     @State private var confirmDelete = false
+    @State private var showChat = false
+
+    init(viewModel: LeagueDetailViewModel) {
+        self.viewModel = viewModel
+        self._chatVM = ObservedObject(wrappedValue: viewModel.chatViewModel)
+    }
 
     var body: some View {
         Form {
             headerSection
             standingsSection
             matchesSection
+            chatSection
             membersSection
 
             if viewModel.isAdmin {
@@ -143,6 +151,69 @@ struct LeagueDetailView: View {
         }
         .navigationDestination(for: Game.self) { game in
             GameDetailView(game: game, currentUsername: viewModel.currentUserName)
+        }
+    }
+
+    private var chatSection: some View {
+        Section {
+            Toggle(isOn: $showChat.animation()) {
+                Label("Chat", systemImage: "bubble.left.and.bubble.right")
+            }
+            .onChange(of: showChat) { _, visible in
+                if visible, chatVM.decryptedMessages.isEmpty {
+                    chatVM.load()
+                }
+            }
+
+            if showChat {
+                if chatVM.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .listRowBackground(Color.clear)
+                } else if chatVM.decryptedMessages.isEmpty {
+                    InlineEmptyState(
+                        icon: "bubble.left.and.bubble.right",
+                        text: "No messages yet. Say hello!"
+                    )
+                } else {
+                    ForEach(chatVM.decryptedMessages) { msg in
+                        ChatBubbleView(message: msg, currentUsername: viewModel.currentUserName)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                if msg.message.sender.username == viewModel.currentUserName {
+                                    Button(role: .destructive) {
+                                        chatVM.delete(msg)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    TextField("Message…", text: $chatVM.inputText)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button {
+                        chatVM.send()
+                    } label: {
+                        Image(systemName: "paperplane.fill")
+                            .foregroundStyle(chatVM.inputText.trimmingCharacters(in: .whitespaces).isEmpty || chatVM.isSending ? Color.secondary : Color.accentColor)
+                    }
+                    .disabled(chatVM.inputText.trimmingCharacters(in: .whitespaces).isEmpty || chatVM.isSending)
+                }
+            }
+        }
+        .alert(
+            "Chat Error",
+            isPresented: Binding(
+                get: { chatVM.errorMessage != nil },
+                set: { if !$0 { chatVM.errorMessage = nil } }
+            )
+        ) {
+            Button("OK") { chatVM.errorMessage = nil }
+        } message: {
+            Text(chatVM.errorMessage ?? "")
         }
     }
 

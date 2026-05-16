@@ -17,6 +17,8 @@ final class LeagueDetailViewModel: ObservableObject {
     @Published var currentUserName: String?
     @Published private(set) var isWorking: Bool = false
 
+    let chatViewModel: LeagueChatViewModel
+
     private let leagueManager: LeagueManagerImpl
     private let userManager: UserManagerImpl
     private let authManager: AuthenticationManagerImpl
@@ -25,12 +27,19 @@ final class LeagueDetailViewModel: ObservableObject {
     init(league: League,
          leagueManager: LeagueManagerImpl,
          userManager: UserManagerImpl,
-         authManager: AuthenticationManagerImpl)
+         authManager: AuthenticationManagerImpl,
+         chatManager: ChatManagerImpl)
     {
         self.league = league
         self.leagueManager = leagueManager
         self.userManager = userManager
         self.authManager = authManager
+        self.chatViewModel = LeagueChatViewModel(
+            leagueId: league.id,
+            chatManager: chatManager,
+            authManager: authManager,
+            userManager: userManager
+        )
 
         // Stay in sync if the user profile reloads with a fresh copy of this league.
         userManager.$currentUserProfile
@@ -133,7 +142,8 @@ final class LeagueDetailViewModel: ObservableObject {
                 league: league,
                 leagueManager: leagueManager,
                 userManager: user,
-                authManager: auth
+                authManager: auth,
+                chatManager: ChatManagerImpl()
             )
         }
     }

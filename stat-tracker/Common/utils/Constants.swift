@@ -73,6 +73,15 @@ public enum Constants {
             public static let deleteGame = "/api/game/remove/%@"
             public static let getGames = "/api/game"
         }
+
+        public enum Chat {
+            public static let registerPublicKey = "/api/chat/keys"
+            public static let getLeaguePublicKeys = "/api/chat/keys/%@"
+            public static let getMessages = "/api/chat/%@"
+            public static let sendMessage = "/api/chat/%@"
+            public static let deleteMessage = "/api/chat/%@/%@"
+            public static let getMessageImage = "/api/chat/%@/%@/image"
+        }
     }
 
     public enum UserDefaultsKeys {

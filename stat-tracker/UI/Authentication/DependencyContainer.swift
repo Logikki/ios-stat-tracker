@@ -22,6 +22,7 @@ final class DependencyContainer: ObservableObject {
     let gameManager: GameManagerImpl
     let leagueManager: LeagueManagerImpl
     let teamsManager: TeamsManager
+    let chatManager: ChatManagerImpl
 
     // MARK: - App State
 
@@ -43,6 +44,7 @@ final class DependencyContainer: ObservableObject {
         gameManager = GameManagerImpl()
         leagueManager = LeagueManagerImpl()
         teamsManager = TeamsManagerImpl()
+        chatManager = ChatManagerImpl()
 
         appState = AppState(
             authManager: authenticationManager,
@@ -135,7 +137,8 @@ final class DependencyContainer: ObservableObject {
             league: league,
             leagueManager: leagueManager,
             userManager: userManager,
-            authManager: authenticationManager
+            authManager: authenticationManager,
+            chatManager: chatManager
         )
     }
 
